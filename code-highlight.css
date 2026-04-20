@@ -1,0 +1,116 @@
+/* Code Block Styles - Similar to Discord/Telegram */
+.code-block-container {
+    position: relative;
+    margin: 8px 0;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #2b2d31;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+}
+
+.code-block-header {
+    background: #1e1f22;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #3a3d42;
+}
+
+.code-block-language {
+    color: #b9bbbe;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.code-block-copy {
+    background: transparent;
+    border: none;
+    color: #b9bbbe;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    transition: all 0.2s;
+}
+
+.code-block-copy:hover {
+    background: #3a3d42;
+    color: #fff;
+}
+
+.code-block-copy.copied {
+    color: #3ba55d;
+}
+
+.code-block-content {
+    padding: 12px;
+    overflow-x: auto;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.code-block-content::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.code-block-content::-webkit-scrollbar-track {
+    background: #1e1f22;
+}
+
+.code-block-content::-webkit-scrollbar-thumb {
+    background: #3a3d42;
+    border-radius: 4px;
+}
+
+.code-block-content::-webkit-scrollbar-thumb:hover {
+    background: #4e5157;
+}
+
+.code-block-content pre {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+}
+
+.code-block-content code {
+    display: block;
+    color: #d1d5da;
+    font-size: 13px;
+    line-height: 1.3;
+    white-space: pre;
+    word-wrap: normal;
+}
+
+/* Inline code */
+code:not(.code-block-content code) {
+    background: rgba(0, 0, 0, 0.1);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.9em;
+    color: #c9510c;
+}
+
+/* For blue messages, lighter inline code */
+.message-body.bg-blue-500 code:not(.code-block-content code) {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+/* Syntax Highlighting Colors */
+.code-keyword { color: #ff79c6; }
+.code-string { color: #a3be8c; }
+.code-comment { color: #6272a4; font-style: italic; }
+.code-function { color: #8be9fd; }
+.code-number { color: #bd93f9; }
+.code-operator { color: #ff79c6; }
+.code-punctuation { color: #f8f8f2; }
+.code-class { color: #50fa7b; }
+.code-variable { color: #f8f8f2; }
+.code-tag { color: #ff79c6; }
+.code-attr-name { color: #50fa7b; }
+.code-attr-value { color: #a3be8c; }

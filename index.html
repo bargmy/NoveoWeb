@@ -1,0 +1,1499 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+	<link rel="manifest" href="manifest.json">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noveo</title>
+    <!-- NOTE: The paths for these files are preserved as requested. -->
+    <script src="static/js/tailwind.min.js"></script>
+    <link rel="stylesheet" href="static/js/all.min.css" />
+    <link rel="stylesheet" href="code-highlight.css" />
+    <link rel="stylesheet" href="static/css/app-core.css?v=20260412_1" />
+    <link rel="stylesheet" href="static/css/app-dynamic.css?v=20260404_62" id="dynamic-theme-style-link" />
+</head>
+<body class="app-surface h-screen w-screen">
+
+        <div id="app-wrapper" class="h-full w-full">
+            <div id="errorToast" class="hidden fixed top-3 left-1/2 z-[95] w-[min(92vw,38rem)] -translate-x-1/2 items-start rounded-2xl border px-4 py-3 shadow-xl backdrop-blur app-error-toast">
+                <div class="min-w-0 flex-1">
+                    <div id="errorToastTitle" class="text-sm font-bold">Error</div>
+                    <div id="errorToastMessage" class="mt-1 text-sm opacity-90">An unexpected error occurred.</div>
+                </div>
+            </div>
+            <div id="emojiDownloadToast" class="hidden fixed top-3 left-1/2 z-[94] w-[min(92vw,38rem)] -translate-x-1/2 rounded-2xl border px-4 py-3 shadow-xl backdrop-blur bg-white/95 border-gray-200">
+                <div class="min-w-0">
+                    <div id="emojiDownloadTitle" class="text-sm font-bold" data-i18n="settings.emojiDownloadTitle">Downloading iOS emojis</div>
+                    <div id="emojiDownloadMessage" class="mt-1 text-sm text-gray-600" data-i18n="settings.emojiDownloadPreparing">Preparing emoji cache...</div>
+                    <div id="emojiDownloadProgressContainer" class="mt-3 w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                        <div id="emojiDownloadProgressBar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Loading Overlay -->
+            <div id="loadingOverlay" class="hidden" style="display: none !important;">
+            <div id="loadingSpinner" class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500"></div>
+            <p id="loadingStatus" class="mt-4 text-gray-600" data-i18n="loading.connecting">Connecting...</p>
+            <button id="logoutFromLoadingButton" class="hidden mt-6 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg interactive-pop">
+                <span data-i18n="auth.logout">Logout</span>
+            </button>
+        </div>
+
+        <!-- Auth Screen -->
+        <div id="authScreen" class="hidden flex-col items-center justify-center h-full w-full p-4 animated-gradient-bg">
+            <div class="fixed inset-0 w-full h-screen bg-white flex flex-col justify-center items-center modal-content">
+                <img src="icon.png" alt="App Icon" class="w-24 h-24 mb-8 object-contain">
+                <div class="w-full max-w-sm px-8">
+                    <div id="loginForm">
+                        <h1 class="text-3xl font-bold mb-2 text-center" data-i18n="auth.welcomeBack">Welcome Back!</h1>
+                        <p id="authLoginSubtitle" class="text-gray-500 mb-6 text-center" data-i18n="auth.loginSubtitle">Please log in to continue.</p>
+                        <input id="loginUsernameInput" type="text" placeholder="Username" data-i18n-placeholder="auth.username" class="w-full px-4 py-2 mb-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input id="loginPasswordInput" type="password" placeholder="Password" data-i18n-placeholder="auth.password" class="w-full px-4 py-2 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button id="loginButton" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg interactive-pop" data-i18n="auth.login">Login</button>
+                        <p class="text-xs text-center text-gray-500 mt-4">
+                            <span data-i18n="auth.noAccount">Don't have an account?</span> <a href="#" id="showRegister" class="font-semibold text-blue-500 hover:underline" data-i18n="auth.registerHere">Register here</a>.
+                        </p>
+                    </div>
+                    <div id="registerForm" class="hidden">
+                        <h1 class="text-3xl font-bold mb-2 text-center" data-i18n="auth.createAccount">Create Account</h1>
+                        <p class="text-gray-500 mb-6 text-center" data-i18n="auth.registerSubtitle">Join the conversation in seconds.</p>
+                        <input id="registerUsernameInput" type="text" placeholder="Username (for login)" data-i18n-placeholder="auth.registerUsername" class="w-full px-4 py-2 mb-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input id="registerPasswordInput" type="password" placeholder="Choose a Password" data-i18n-placeholder="auth.choosePassword" class="w-full px-4 py-2 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button id="registerButton" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg interactive-pop" data-i18n="auth.register">Register</button>
+                        <p class="text-xs text-center text-gray-500 mt-4">
+                            <span data-i18n="auth.haveAccount">Already have an account?</span> <a href="#" id="showLogin" class="font-semibold text-blue-500 hover:underline" data-i18n="auth.loginHere">Login here</a>.
+                        </p>
+                    </div>
+                    <p id="authError" class="text-red-500 text-sm text-center mt-4"></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="onboardingScreen" class="hidden fixed inset-0 w-full h-screen bg-white flex-col justify-center items-center modal-content px-6">
+            <div class="w-full max-w-md">
+                <div class="text-center mb-8">
+                    <h1 class="text-4xl font-black tracking-tight app-text-primary">Noveo</h1>
+                </div>
+                <div id="onboardingCard" class="rounded-[2rem] border app-border bg-white shadow-sm px-6 py-8 touch-pan-y select-none">
+                    <div id="onboardingIcon" class="mx-auto flex h-28 w-28 items-center justify-center rounded-[2rem] bg-blue-50 text-blue-600"></div>
+                    <p id="onboardingDescription" class="mt-6 min-h-[5rem] text-center text-base leading-7 app-text-primary"></p>
+                    <div id="onboardingDots" class="mt-6 text-center text-xl tracking-[0.35em] app-text-muted"></div>
+                    <div class="mt-8 flex items-center justify-between gap-3">
+                        <button id="onboardingSkipButton" type="button" class="px-5 py-2.5 rounded-xl btn-neutral interactive-pop" data-i18n="onboarding.skip">Skip</button>
+                        <button id="onboardingNextButton" type="button" class="px-5 py-2.5 rounded-xl btn-accent interactive-pop" data-i18n="onboarding.next">Next</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main App -->
+        <div id="mainApp" class="hidden h-full w-full md:flex relative overflow-hidden">
+            <!-- Sidebar -->
+            <div id="sidebar" class="app-panel w-full h-full md:w-1/3 lg:w-1/4 border-r app-border flex flex-col absolute md:relative inset-0 md:inset-auto z-20 view-container">
+                <div class="p-3 border-b app-border flex items-center justify-between app-panel-muted flex-shrink-0">
+                    <button id="settingsButton" class="app-icon-button text-xl p-2 interactive-pop" title="Settings" data-i18n-title="settings.settings"><i class="fas fa-bars"></i></button>
+                    <div id="sidebarHeaderCenter" class="mx-3 min-w-0 flex-1">
+                        <h2 id="sidebarTitle" class="font-bold text-xl transition-opacity duration-700 ease-in-out truncate text-center">Connecting...</h2>
+                        <div id="sidebarSearchBar" class="hidden relative">
+                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input id="sidebarSearchInput" type="text" class="w-full rounded-xl border bg-white py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Search public handles" data-i18n-placeholder="menu.searchPublic">
+                            <button id="closeSidebarSearchButton" type="button" class="hidden absolute right-2 top-1/2 -translate-y-1/2 app-icon-button p-1.5" title="Close"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
+                    <button id="createChannelButton" class="app-icon-button text-xl p-2 interactive-pop" title="Search" data-i18n-title="common.search"><span class="sidebar-search-toggle-icon"><i class="fas fa-search"></i></span></button>
+                </div>
+                <div id="contactsList" class="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar"></div>
+        <!-- Mini Audio Player in Sidebar -->
+				<div id="sidebarAudioPlayer" class="hidden border-t app-border p-3 app-panel-muted">
+					<div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold text-gray-600" data-i18n="audio.nowPlaying">NOW PLAYING</span>
+						<button id="sidebarCloseButton" class="text-gray-400 hover:text-gray-600">
+							<i class="fas fa-times text-xs"></i>
+						</button>
+					</div>
+					<div class="flex items-center space-x-3">
+						<button id="sidebarPlayBtn" class="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center hover:bg-blue-600 transition flex-shrink-0">
+							<i class="fas fa-play text-sm"></i>
+						</button>
+						<div class="flex-1 min-w-0">
+							<div id="sidebarTrackName" class="text-sm font-medium text-gray-900 truncate" data-i18n="audio.trackName">Track Name</div>
+							<div class="flex items-center space-x-2 mt-1">
+								<span id="sidebarCurrentTime" class="text-xs text-gray-500">0:00</span>
+								<input id="sidebarSeekBar" type="range" min="0" max="100" value="0" class="flex-1 h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer">
+								<span id="sidebarDuration" class="text-xs text-gray-500">0:00</span>
+							</div>
+						</div>
+						<button id="sidebarVolumeToggleButton" class="text-gray-500 hover:text-gray-700">
+							<i class="fas fa-volume-up text-sm"></i>
+						</button>
+					</div>
+					<div id="sidebarVolumeControl" class="hidden mt-2 flex items-center space-x-2">
+						<i class="fas fa-volume-down text-xs text-gray-400"></i>
+						<input id="sidebarVolumeBar" type="range" min="0" max="100" value="100" class="flex-1 h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer">
+						<i class="fas fa-volume-up text-xs text-gray-400"></i>
+					</div>
+				</div>
+			</div> <!-- End of sidebar -->
+            <!-- Chat Window -->
+            <div id="chatWindow" class="flex-1 flex flex-col app-surface absolute md:relative inset-0 md:transform-none transform translate-x-full z-10 view-container">
+                <div id="welcomeScreen" class="flex flex-1 flex-col items-center justify-center text-center p-4">
+                     <div class="w-24 h-24 mb-4 text-blue-500"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg></div>
+                    <h2 class="text-2xl font-semibold" data-i18n="brand.messengerName">Noveo Messenger</h2><p class="text-gray-500 mt-2" data-i18n="chat.welcomeSubtitle">Select a user to start a conversation.</p>
+                </div>
+                <div id="chatArea" class="hidden flex-1 flex flex-col min-h-0">
+                    <!-- Chat Header -->
+                    <div id="chatHeader" class="app-panel p-3 border-b app-border flex items-center shadow-sm flex-shrink-0">
+                        <button id="backToContacts" class="app-icon-button mr-3 p-2 md:hidden interactive-pop" title="Back" data-i18n-title="common.back"><i class="fas fa-arrow-left"></i></button>
+                        <div id="chatAvatar" class="relative mr-3 w-10 h-10 avatar-circle"></div>
+                        <div class="flex-grow cursor-pointer" id="chatHeaderInfo">
+                            <h3 id="chatName" class="font-semibold flex items-center"></h3>
+                            <p id="chatStatus" class="text-xs text-blue-500"></p>
+                        </div>
+                        <button id="leaveGroupButton" class="hidden app-icon-button-danger text-xl p-3 interactive-pop" title="Leave Group/Channel" data-i18n-title="chat.leaveChat">
+                            <i class="fas fa-door-open"></i>
+                        </button>
+                        <button id="chatSearchButton" class="hidden app-icon-button text-xl p-3 interactive-pop" title="Search Messages" data-i18n-title="menu.searchMessages">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <!-- Voice Chat Button -->
+                        <button id="e2eeToggleButton" class="hidden ml-auto app-icon-button text-xl p-3 interactive-pop" title="Start E2EE Chat" data-i18n-title="chat.startE2ee">
+                            <i class="fas fa-lock"></i>
+                        </button>
+                        <button id="voiceCallButton" class="app-icon-button text-xl p-3 interactive-pop" title="Start Voice Chat" data-i18n-title="chat.startVoice">
+                            <i class="fas fa-phone"></i>
+                        </button>
+                    </div>
+                    <!-- Active Voice Chat Bar -->
+                    <div id="activeCallBar" class="hidden p-2 border-b app-border app-panel-muted flex-shrink-0">
+                        <div class="voice-call-shell w-full">
+                            <div class="voice-call-header-row">
+                                <div class="min-w-0">
+                                    <div id="callStatusLabel" class="voice-call-status-label">Voice Call</div>
+                                    <div id="callStatusMeta" class="voice-call-status-meta">Connecting...</div>
+                                </div>
+                                <div class="voice-call-controls">
+                                    <button id="toggleScreenShareButton" class="voice-call-control-button interactive-pop" type="button" title="Share Screen">
+                                        <i class="fas fa-display"></i>
+                                    </button>
+                                    <button id="toggleScreenShareQualityButton" class="voice-call-control-button interactive-pop hidden" type="button" title="Screen share quality">480p</button>
+                                    <button id="toggleMuteButton" class="voice-call-control-button interactive-pop" type="button" title="Mute microphone">
+                                        <i class="fas fa-microphone-slash"></i>
+                                    </button>
+                                    <button id="toggleDeafenButton" class="voice-call-control-button interactive-pop" type="button" title="Deafen">
+                                        <i class="fas fa-volume-xmark"></i>
+                                    </button>
+                                    <button id="toggleCallStageButton" class="voice-call-control-button interactive-pop hidden" type="button" title="Minimize stream">
+                                        <i class="fas fa-minimize"></i>
+                                    </button>
+                                    <button id="leaveCallButton" class="voice-call-control-button voice-call-control-button-danger interactive-pop" type="button" title="Leave Call">
+                                        <i class="fas fa-phone-slash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="callScreenStage" class="voice-call-stage hidden"></div>
+                            <div id="voiceParticipantsContainer" class="voice-call-participants"></div>
+                        </div>
+                    </div>
+                    <!-- Pinned Message Bar -->
+                    <div id="pinnedMessageBar" class="hidden p-2 border-b app-border app-panel-muted bg-opacity-70 backdrop-blur-sm flex-shrink-0">
+                        <div class="flex items-center text-sm text-blue-800">
+                            <i class="fas fa-thumbtack fa-fw mr-3 transform -rotate-45"></i>
+                            <div class="flex-grow truncate">
+                                <div class="font-bold" data-i18n="chat.pinnedMessage">Pinned Message</div>
+                                <div id="pinnedMessageContent" class="truncate"></div>
+                            </div>
+                            <button id="unpinButton" class="ml-4 p-1 text-blue-600 hover:text-blue-800" title="Unpin Message">&times;</button>
+                        </div>
+                    </div>
+                    <div id="messagesContainer" class="flex-1 p-4 overflow-y-auto custom-scrollbar chat-bg flex flex-col">
+                        <div id="historyLoader" class="text-center p-4 hidden"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div></div>
+                        <div id="emptyChatPlaceholder" class="hidden flex-1 items-center justify-center">
+                            <div class="bg-gray-900 bg-opacity-20 text-white p-4 rounded-lg text-center shadow-lg">
+                                <p class="font-semibold" data-i18n="chat.noMessages">No messages here yet.</p>
+                                <p class="text-sm opacity-90" data-i18n="chat.noMessagesSub">Send a message or say hi to start the conversation!</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="joinChannelBar" class="hidden app-panel p-4 border-t app-border flex-shrink-0 items-center justify-center">
+                        <button id="joinChannelButton" class="btn-accent font-bold py-2 px-8 rounded-lg interactive-pop" data-i18n="chat.joinChannel">Join Channel</button>
+                    </div>
+                    <!-- Message Input -->
+                    <div id="messageInputContainer" class="app-panel p-2 border-t app-border flex-shrink-0">
+                        <div id="replyPreviewContainer" class="hidden mb-2 p-2 border-l-4 app-border app-panel-muted rounded-r-lg relative">
+                            <button id="removeReplyPreview" class="absolute top-1 right-2 app-icon-button-danger">&times;</button>
+                            <div class="text-xs font-bold text-blue-600"><span data-i18n="chat.replyingTo">Replying to</span> <span id="replyPreviewUsername"></span></div>
+                            <p id="replyPreviewText" class="text-sm text-gray-600 truncate"></p>
+                        </div>
+                        <div id="filePreviewContainer" class="hidden mb-2 p-2 border app-border rounded-lg app-panel-muted relative">
+                            <button id="removeFilePreview" class="absolute -top-2 -right-2 btn-danger rounded-full h-6 w-6 flex items-center justify-center text-xs">&times;</button>
+                            <div class="flex items-center gap-3">
+                                <img id="imagePreview" class="hidden w-16 h-16 object-cover rounded">
+                                <i id="fileIconPreview" class="fas fa-file-alt text-4xl text-gray-400"></i>
+                                <div class="truncate"><p id="fileNamePreview" class="font-semibold text-sm"></p><p id="fileSizePreview" class="text-xs text-gray-500"></p></div>
+                            </div>
+                        </div>
+						<div id="voiceRecordingContainer" class="hidden mb-2 p-3 border-l-4 rounded-r-lg">
+							<div class="flex items-center gap-3">
+								<div class="recording-pulse"></div>
+								<span class="text-red-600 font-semibold">ðŸŽ¤ Recording...</span>
+								<span id="recordingTimer" class="text-red-600 font-mono">0:00</span>
+							</div>
+							<p class="text-xs text-gray-600 mt-1" data-i18n="voice.releaseToSend">Release to send • Slide left to cancel</p>
+						</div>
+						<div id="voicePreviewContainer" class="hidden mb-2 p-3 border-l-4 app-border rounded-r-lg">
+							<div class="flex items-center justify-between">
+								<div class="flex items-center gap-3">
+									<i class="fas fa-microphone text-blue-600 text-xl"></i>
+									<div>
+										<p class="text-sm font-semibold text-blue-600" data-i18n="voice.message">Voice Message</p>
+										<p id="voiceDuration" class="text-xs text-gray-600">0:00</p>
+									</div>
+								</div>
+								<div class="flex gap-2">
+									<button id="cancelVoiceBtn" class="px-3 py-1 btn-neutral rounded-full text-sm" data-i18n="common.cancel">Cancel</button>
+									<button id="sendVoiceBtn" class="px-3 py-1 btn-accent rounded-full text-sm" data-i18n="common.send">Send</button>
+								</div>
+							</div>
+						</div>
+                        <div id="uploadProgressContainer" class="hidden h-1 mb-2 rounded-full"><div id="uploadProgressBar" class="h-1 rounded-full" style="width: 0%;"></div></div>
+						<div class="flex items-center">
+							<input type="file" id="fileInput" class="hidden">
+							<button id="fileUploadButton" class="app-icon-button mr-2 text-lg p-1.5 interactive-pop" title="Attach File"><i class="fas fa-paperclip"></i></button>
+							<button id="stickersButton" class="app-icon-button mr-2 text-lg p-1.5 interactive-pop" title="Stickers"><i class="fas fa-smile"></i></button>
+							<textarea
+							  id="messageInput"
+							  rows="1"
+                              placeholder="Message..."
+                              data-i18n-placeholder="chat.messagePlaceholder"
+							  class="flex-1 px-4 py-1.5 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none overflow-hidden"
+							></textarea>
+							<button id="sendButton" class="app-icon-button ml-2 w-10 h-10 rounded-full transition duration-300 flex items-center justify-center interactive-pop" title="Send">
+								<img id="sendIcon" src="send.svg" alt="Send" class="w-6 h-6" draggable="false">
+								<i id="micIcon" class="fas fa-microphone text-2xl hidden"></i>
+							</button>
+							<button id="stopRecordingButton" class="ml-2 btn-danger w-10 h-10 rounded-full transition duration-300 flex items-center justify-center interactive-pop hidden" title="Stop & Send">
+								<i class="fas fa-stop text-lg"></i>
+							</button>
+						</div>
+						<div id="stickersModal" class="hidden absolute bottom-20 left-4 app-panel rounded-lg shadow-xl w-80 max-h-96 z-50">
+							<div class="p-3 border-b app-border flex justify-between items-center app-panel-muted rounded-t-lg">
+								<h3 class="font-bold text-gray-800" data-i18n="stickers.title">Stickers</h3>
+								<button id="closeStickersButton" class="text-gray-500 hover:text-gray-700">
+									<i class="fas fa-times"></i>
+								</button>
+							</div>
+							<div id="stickersGrid" class="p-3 grid grid-cols-3 gap-2 overflow-y-auto max-h-80 custom-scrollbar">
+								<div class="col-span-3 text-center text-gray-500 py-8">
+									<i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+									<p data-i18n="stickers.loading">Loading stickers...</p>
+								</div>
+							</div>
+						</div>
+                        <div id="attachMenuPanel" class="hidden absolute bottom-20 left-4 app-panel rounded-2xl shadow-xl w-80 z-50 overflow-hidden">
+                            <div class="p-3 border-b app-border flex items-center justify-between app-panel-muted">
+                                <h3 class="font-bold text-gray-800" data-i18n="attach.title">Attach</h3>
+                                <button id="closeAttachMenuButton" class="text-gray-500 hover:text-gray-700" title="Close" data-i18n-title="common.close">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="p-3 grid grid-cols-2 gap-3">
+                                <button id="attachMenuFileButton" type="button" class="app-list-row app-list-row-hover rounded-2xl p-4 flex flex-col items-center justify-center gap-3 interactive-pop text-center">
+                                    <span class="w-12 h-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl"><i class="fas fa-file-upload"></i></span>
+                                    <span class="font-semibold app-text-primary" data-i18n="attach.file">File</span>
+                                </button>
+                                <button id="attachMenuPollButton" type="button" class="app-list-row app-list-row-hover rounded-2xl p-4 flex flex-col items-center justify-center gap-3 interactive-pop text-center">
+                                    <span class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-xl"><i class="fas fa-square-poll-vertical"></i></span>
+                                    <span class="font-semibold app-text-primary" data-i18n="attach.poll">Poll</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modals -->
+		
+		<!-- Stickers Modal -->
+        
+        <div id="mainMenuOverlay" class="hidden fixed inset-0 z-[40] modal-bg backdrop-blur-sm transition-opacity">
+            <div class="bg-white h-full w-72 shadow-xl flex flex-col transform transition-transform duration-300 -translate-x-full" id="mainMenuContent">
+                <div class="p-5 border-b bg-gray-50 flex justify-between items-center">
+                    <h2 class="font-bold text-xl app-text-primary" data-i18n="menu.title">Menu</h2>
+                    <button id="menuCloseBtn" class="app-icon-button-danger text-2xl">&times;</button>
+                </div>
+                <div class="p-3 flex-col flex space-y-2 mt-2">
+                     <button id="menuContactsBtn" class="app-list-row app-list-row-hover flex items-center p-3 rounded-lg text-left interactive-pop transition-colors">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3 app-accent-text">
+                            <i class="fas fa-address-book"></i>
+                        </div>
+                        <span class="font-semibold app-text-primary" data-i18n="menu.allContacts">All Contacts</span>
+                     </button>
+                     <button id="menuNewChatBtn" class="app-list-row app-list-row-hover flex items-center p-3 rounded-lg text-left interactive-pop transition-colors">
+                        <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center mr-3 text-emerald-600">
+                            <i class="fas fa-plus-square"></i>
+                        </div>
+                        <span class="font-semibold app-text-primary" data-i18n="chat.newChat">New Chat</span>
+                     </button>
+                     <button id="menuStarsBtn" class="app-list-row app-list-row-hover flex items-center p-3 rounded-lg text-left interactive-pop transition-colors">
+                        <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center mr-3 app-warning-text">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="font-semibold app-text-primary" data-i18n="wallet.stars">Stars</div>
+                            <div id="menuStarsSummary" class="text-xs app-text-muted">0.0 Stars</div>
+                        </div>
+                     </button>
+                     
+                     <button id="menuSettingsBtn" class="app-list-row app-list-row-hover flex items-center p-3 rounded-lg text-left interactive-pop transition-colors">
+                        <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3 app-text-secondary">
+                            <i class="fas fa-cog"></i>
+                        </div>
+                        <span class="font-semibold app-text-primary" data-i18n="settings.settings">Settings</span>
+                     </button>
+                </div>
+                <div class="mt-auto p-4 border-t text-center text-xs text-gray-400">
+                    <div data-i18n="brand.messengerName">Noveo Messenger</div>
+                    <div id="sidebarVersion" class="mt-1 app-text-muted">v1.9.7</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="contactsModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md modal-content h-[80vh] flex flex-col">
+                <div class="p-4 border-b flex justify-between items-center bg-gray-50">
+                    <h2 class="text-xl font-bold" data-i18n="chat.newChat">New Chat</h2>
+                    <button id="closeContactsModal" class="app-icon-button text-xl p-2" title="Close" data-i18n-title="common.close">&times;</button>
+                </div>
+                <div class="p-3 border-b bg-white">
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        <input type="text" id="contactSearchInput" placeholder="Search people..." data-i18n-placeholder="menu.searchPeople" class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+                    </div>
+                </div>
+                <div id="allContactsList" class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1"></div>
+            </div>
+        </div>
+        <div id="saveContactModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-[80] p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-sm modal-content">
+                <div class="p-4 border-b flex items-center justify-between bg-gray-50">
+                    <h2 id="saveContactTitle" class="text-xl font-bold" data-i18n="contacts.addTitle">Add to Contacts</h2>
+                    <button id="closeSaveContactModalButton" class="app-icon-button text-xl p-2" title="Close">&times;</button>
+                </div>
+                <div class="p-4 space-y-3">
+                    <label for="saveContactNameInput" class="block text-sm font-semibold" data-i18n="contacts.saveAs">Save as</label>
+                    <input id="saveContactNameInput" type="text" class="w-full rounded-lg border px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="p-4 border-t bg-gray-50 flex justify-end gap-3">
+                    <button id="cancelSaveContactButton" type="button" class="px-4 py-2 rounded-lg btn-neutral interactive-pop" data-i18n="common.cancel">Cancel</button>
+                    <button id="confirmSaveContactButton" type="button" class="px-4 py-2 rounded-lg btn-success interactive-pop" data-i18n="contacts.addAction">Add to Contacts</button>
+                </div>
+            </div>
+        </div>
+    
+        <div id="settingsModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md modal-content">
+                <div class="p-4 border-b flex items-center">
+                    <button id="settingsBackBtn" class="app-icon-button w-10 flex-shrink-0 p-2 -ml-1 invisible pointer-events-none" title="Back" data-i18n-title="common.back"><i class="fas fa-arrow-left"></i></button>
+                    <h2 id="settingsTitle" class="text-xl font-bold flex-1 text-center">Settings</h2>
+                    <button id="closeSettingsButton" class="w-10 flex-shrink-0 text-xl p-2" title="Close">&times;</button>
+                </div>
+                <!-- Menu: 3 options -->
+                <div id="settingsMenuView" class="p-6 space-y-2">
+                    <button id="settingsPremiumOption" class="app-list-row app-list-row-hover w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 interactive-pop"><i class="fas fa-star text-amber-400 w-6 text-center"></i><span data-i18n="settings.subscription">Subscription</span></button>
+                    <button id="settingsProfileOption" class="app-list-row app-list-row-hover w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 interactive-pop"><i class="fas fa-user app-text-muted w-6 text-center"></i><span data-i18n="settings.profile">Profile</span></button>
+                    <button id="settingsAccountOption" class="app-list-row app-list-row-hover w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 interactive-pop"><i class="fas fa-key app-text-muted w-6 text-center"></i><span data-i18n="settings.account">Account</span></button>
+                    <button id="settingsPreferencesOption" class="app-list-row app-list-row-hover w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 interactive-pop"><i class="fas fa-paint-brush app-text-muted w-6 text-center"></i><span data-i18n="settings.preferences">Preferences</span></button>
+                    <button id="settingsChangelogOption" class="app-list-row app-list-row-hover w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 interactive-pop"><i class="fas fa-clock-rotate-left app-text-muted w-6 text-center"></i><span data-i18n="settings.changelog">Changelog</span></button>
+                </div>
+                <!-- Profile section -->
+                <div id="settingsProfileSection" class="hidden p-4 md:p-6">
+                    <input type="file" id="avatarInput" class="hidden" accept="image/*">
+                    <div id="settingsProfileSheet" class="profile-sheet profile-sheet-settings">
+                        <button id="settingsProfileEditButton" class="profile-sheet-edit-button interactive-pop" title="Edit Profile" data-i18n-title="settings.editProfile"><i class="fas fa-pen"></i></button>
+                        <div id="settingsProfileHeader" class="profile-sheet-header">
+                            <div id="settingsAvatar" class="profile-sheet-avatar avatar-circle cursor-pointer" title="Change Avatar" data-i18n-title="profile.changeAvatar"></div>
+                            <div class="min-w-0 flex-1">
+                                <h3 id="settingsUsername" class="profile-sheet-name flex items-center"></h3>
+                                <p id="settingsProfileStatus" class="profile-sheet-status">Your profile</p>
+                                <div class="profile-sheet-meta-row">
+                                    <span id="settingsProfileCreatedAt" class="profile-sheet-meta-chip">Joined —</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="profile-sheet-tabs">
+                            <button type="button" id="settingsProfileTabBio" data-profile-tab="bio" class="profile-sheet-tab active" data-i18n="profile.bio">Bio</button>
+                            <button type="button" id="settingsProfileTabGifts" data-profile-tab="gifts" class="profile-sheet-tab" data-i18n="profile.gifts">Gifts</button>
+                            <button type="button" id="settingsProfileTabMutualGroups" data-profile-tab="mutual-groups" class="profile-sheet-tab" data-i18n="settings.groups">Groups</button>
+                        </div>
+                        <div class="profile-sheet-panels custom-scrollbar">
+                            <section id="settingsProfilePanelBio" data-profile-panel="bio" class="profile-sheet-panel">
+                                <div id="settingsProfileViewMode" class="space-y-4">
+                                    <div class="profile-sheet-section">
+                                        <div class="profile-sheet-section-title" data-i18n="profile.bio">Bio</div>
+                                        <p id="settingsProfileBio" class="profile-sheet-text">No bio yet.</p>
+                                    </div>
+                                </div>
+                                <div id="settingsProfileEditMode" class="hidden space-y-4">
+                                    <div class="profile-sheet-section">
+                                        <div class="profile-sheet-section-title" data-i18n="profile.displayName">Display Name</div>
+                                        <div class="space-y-4">
+                                            <div class="profile-sheet-form-field profile-font-field">
+                                                <label for="editUsernameInput" class="profile-sheet-form-label" data-i18n="profile.displayName">Display Name</label>
+                                                <select id="editUsernameFontSelect" class="profile-sheet-font-select" aria-label="Nickname font">
+                                                    <option value="" data-i18n="profile.fontDefault">Default font</option>
+                                                    <option value="8514oem">OEM</option>
+                                                    <option value="bradhitc">Bradley</option>
+                                                    <option value="coure">Courier</option>
+                                                    <option value="freescpt">Script</option>
+                                                    <option value="f_majik">مجیک</option>
+                                                    <option value="impact">Impact</option>
+                                                    <option value="npidivani">Divani</option>
+                                                </select>
+                                                <input id="editUsernameInput" type="text" class="profile-sheet-input">
+                                            </div>
+                                            <div class="profile-sheet-form-field">
+                                                <label for="editHandleInput" class="profile-sheet-form-label">Handle</label>
+                                                <input id="editHandleInput" type="text" class="profile-sheet-input" placeholder="@handle">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="profile-sheet-section">
+                                        <div class="profile-sheet-section-title" data-i18n="profile.skinTitle">Profile Skin</div>
+                                        <div class="space-y-4">
+                                            <div class="profile-sheet-form-field">
+                                                <label for="profileSkinModeSelect" class="profile-sheet-form-label" data-i18n="profile.skinTitle">Profile Skin</label>
+                                                <select id="profileSkinModeSelect" class="profile-sheet-input">
+                                                    <option value="" data-i18n="profile.skinDefault">Default</option>
+                                                    <option value="solid" data-i18n="profile.skinSolid">Static Color</option>
+                                                    <option value="gradient" data-i18n="profile.skinGradient">Gradient</option>
+                                                </select>
+                                                <p class="text-xs text-gray-500 mt-2" data-i18n="profile.skinHint">Premium users can style their profile header.</p>
+                                            </div>
+                                            <div id="profileSkinGradientStopsWrap" class="profile-sheet-form-field hidden">
+                                                <label for="profileSkinGradientStopsSelect" class="profile-sheet-form-label" data-i18n="profile.gradientColors">Gradient Colors</label>
+                                                <select id="profileSkinGradientStopsSelect" class="profile-sheet-input">
+                                                    <option value="2" data-i18n="profile.gradientColorsTwo">2 Colors</option>
+                                                    <option value="3" data-i18n="profile.gradientColorsThree">3 Colors</option>
+                                                </select>
+                                            </div>
+                                            <div id="profileSkinColorRow" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                                <div class="profile-sheet-form-field">
+                                                    <label for="profileSkinColorPrimary" class="profile-sheet-form-label" data-i18n="profile.skinPrimary">Primary Color</label>
+                                                    <input id="profileSkinColorPrimary" type="color" class="profile-sheet-input h-12 p-2">
+                                                </div>
+                                                <div id="profileSkinColorSecondaryWrap" class="profile-sheet-form-field">
+                                                    <label for="profileSkinColorSecondary" class="profile-sheet-form-label" data-i18n="profile.skinSecondary">Secondary Color</label>
+                                                    <input id="profileSkinColorSecondary" type="color" class="profile-sheet-input h-12 p-2">
+                                                </div>
+                                                <div id="profileSkinColorTertiaryWrap" class="profile-sheet-form-field hidden">
+                                                    <label for="profileSkinColorTertiary" class="profile-sheet-form-label" data-i18n="profile.skinTertiary">Third Color</label>
+                                                    <input id="profileSkinColorTertiary" type="color" class="profile-sheet-input h-12 p-2">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="profile-sheet-section">
+                                        <div class="profile-sheet-section-title" data-i18n="profile.bio">Bio</div>
+                                        <div class="profile-sheet-form-field">
+                                            <div class="flex items-center justify-between">
+                                                <label for="editBioInput" class="profile-sheet-form-label" data-i18n="profile.bio">Bio</label>
+                                                <span id="editBioCounter" class="text-xs text-gray-400">0 / 280</span>
+                                            </div>
+                                            <textarea id="editBioInput" rows="5" maxlength="280" placeholder="Tell people a bit about yourself." data-i18n-placeholder="profile.bioPlaceholder" class="profile-sheet-textarea custom-scrollbar"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="profile-sheet-edit-actions">
+                                        <button id="settingsProfileCancelEdit" type="button" class="profile-sheet-secondary-button interactive-pop" data-i18n="common.cancel">Cancel</button>
+                                        <button id="saveSettingsButton" type="button" class="profile-sheet-primary-button interactive-pop" data-i18n="common.save">Save</button>
+                                    </div>
+                                </div>
+                            </section>
+                            <section id="settingsProfilePanelGifts" data-profile-panel="gifts" class="profile-sheet-panel hidden">
+                                <div id="settingsProfileGiftsSection" class="profile-sheet-section hidden">
+                                    <div class="profile-sheet-section-title" data-i18n="profile.gifts">Gifts</div>
+                                    <div id="settingsProfileGiftsList" class="profile-sheet-gifts-grid"></div>
+                                </div>
+                                <div id="settingsProfileNoGifts" class="profile-sheet-empty" data-i18n="gift.noGiftsYet">No gifts yet.</div>
+                            </section>
+                            <section id="settingsProfilePanelMutualGroups" data-profile-panel="mutual-groups" class="profile-sheet-panel hidden">
+                                <div class="profile-sheet-section">
+                                <div class="profile-sheet-section-title" data-i18n="settings.groups">Groups</div>
+                                    <div id="settingsProfileMutualGroupsList" class="profile-sheet-groups-list"></div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+                <!-- Account section -->
+                <div id="settingsAccountSection" class="hidden p-6 space-y-2">
+                    <button id="openChangePasswordBtn" class="app-list-row app-list-row-hover w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 interactive-pop"><i class="fas fa-lock app-text-muted w-5"></i><span data-i18n="account.changePassword">Change Password</span></button>
+                    <button id="openDevicesButton" class="app-list-row app-list-row-hover w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 interactive-pop"><i class="fas fa-laptop app-text-muted w-5"></i><span data-i18n="account.devices">Devices</span></button>
+                    <button id="requestBanRecheckButton" class="hidden w-full text-left px-4 py-3 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 flex items-center gap-3 interactive-pop"><i class="fas fa-scale-balanced text-amber-600 w-5"></i><span data-i18n="account.requestRecheck">Request Recheck / Unban</span></button>
+                    <div id="requestBanRecheckStatus" class="hidden rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"></div>
+                    <button id="openDeleteAccountBtn" class="w-full text-left px-4 py-3 rounded-lg hover:bg-red-50 text-red-600 flex items-center gap-3 interactive-pop"><i class="fas fa-trash-alt text-red-500 w-5"></i><span data-i18n="account.deleteAccount">Delete Account</span></button>
+                    <button id="logoutButton" class="app-list-row app-list-row-hover w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 interactive-pop mt-2"><i class="fas fa-sign-out-alt app-text-muted w-5"></i><span data-i18n="auth.logout">Logout</span></button>
+                </div>
+                <!-- Preferences section -->
+                <div id="settingsPreferencesSection" class="hidden p-6 max-h-[26rem] overflow-y-auto custom-scrollbar">
+                    <h5 class="font-semibold text-gray-600 mb-3" data-i18n="settings.privacySettings">Privacy Settings</h5>
+                    <label class="app-list-row app-list-row-hover flex items-center gap-3 p-3 rounded-lg cursor-pointer mb-4 transition">
+                        <input id="blockGroupInvitesCheckbox" type="checkbox" class="h-4 w-4 rounded cursor-pointer">
+                        <div class="flex-1">
+                            <div class="font-medium" data-i18n="settings.blockGroupInvites">Block Group Invites</div>
+                            <div class="text-xs text-gray-500" data-i18n="settings.blockGroupInvitesDesc">Prevent others from adding you to groups</div>
+                        </div>
+                    </label>
+                    <div class="mb-4">
+                        <h5 class="font-semibold text-gray-600 mb-3" data-i18n="settings.languageSettings">Language</h5>
+                        <label class="app-list-row app-list-row-hover flex items-center gap-3 p-3 rounded-lg transition">
+                            <i class="fas fa-language app-text-muted w-5"></i>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-medium" data-i18n="settings.language">App Language</div>
+                                <div class="text-xs text-gray-500" data-i18n="settings.languageDesc">Matches your browser by default.</div>
+                            </div>
+                            <select id="settingsLanguageSelect" class="rounded-lg border px-3 py-2 text-sm bg-white">
+                                <option value="en">English</option>
+                                <option value="fa">فارسی</option>
+                                <option value="ru">Русский</option>
+                                <option value="zh">中文</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="mb-4">
+                        <h5 class="font-semibold text-gray-600 mb-3" data-i18n="settings.emojis">Emojis</h5>
+                        <label class="app-list-row app-list-row-hover flex items-center gap-3 p-3 rounded-lg transition">
+                            <i class="fas fa-face-smile app-text-muted w-5"></i>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-medium" data-i18n="settings.emojiStyle">Emoji Style</div>
+                                <div class="text-xs text-gray-500" data-i18n="settings.emojiStyleDesc">Choose how emojis are rendered in chats.</div>
+                            </div>
+                            <select id="settingsEmojiSelect" class="rounded-lg border px-3 py-2 text-sm bg-white">
+                                <option value="default" data-i18n="settings.emojiDefault">Default</option>
+                                <option value="ios" data-i18n="settings.emojiIos">iOS</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="mb-4">
+                        <h5 class="font-semibold text-gray-600 mb-3" data-i18n="settings.notifications">Notifications</h5>
+                        <div class="app-list-row app-list-row-hover flex items-center gap-3 p-3 rounded-lg transition">
+                            <i class="fas fa-bell app-text-muted w-5"></i>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-medium" data-i18n="settings.notificationsPermission">Browser Notifications</div>
+                                <div id="notificationsPermissionStatus" class="text-xs text-gray-500" data-i18n="settings.notificationsDisabled">Notifications are off.</div>
+                            </div>
+                            <button id="notificationsPermissionButton" type="button" class="rounded-lg bg-blue-500 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-600 interactive-pop" data-i18n="settings.allowNotifications">Allow</button>
+                        </div>
+                    </div>
+                    <div class="border-t pt-4">
+                        <h5 class="font-semibold text-gray-600 mb-3" data-i18n="settings.appearance">Appearance</h5>
+                        <button id="openThemesButton" class="theme-settings-button app-list-row app-list-row-hover w-full text-left px-4 py-3 rounded-lg flex items-center justify-between gap-3 interactive-pop mb-4">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <i class="fas fa-palette app-text-muted w-5"></i>
+                                <div class="min-w-0">
+                                    <div class="font-semibold app-text-primary" data-i18n="settings.themes">Themes</div>
+                                    <div id="themePresetSummary" class="theme-settings-summary text-xs app-text-muted truncate" data-i18n="settings.themeDefault">Default</div>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right app-text-soft"></i>
+                        </button>
+                    </div>
+                    <div id="updaterSection" class="hidden pt-4 border-t border-gray-200">
+                        <h5 class="font-semibold mb-2" data-i18n="settings.applicationUpdate">Application Update</h5>
+                        <div id="updaterStatus" class="text-sm p-3 rounded-lg bg-gray-100 mb-3" data-i18n="settings.checkingForUpdates">Checking for updates...</div>
+                        <div id="updaterProgressContainer" class="hidden w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                            <div id="updaterProgressBar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button id="checkUpdateButton" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg interactive-pop" data-i18n="settings.checkForUpdates">Check for Updates</button>
+                            <button id="downloadUpdateButton" class="hidden bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg interactive-pop" data-i18n="settings.downloadUpdate">Download Update</button>
+                            <button id="restartAndUpdateButton" class="hidden bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg interactive-pop" data-i18n="settings.restartInstall">Restart & Install</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="settingsChangelogSection" class="hidden p-6">
+                    <div class="app-card-muted rounded-2xl p-4 mb-4">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <div class="text-sm app-text-muted" data-i18n="settings.clientVersion">Client Version</div>
+                                <div id="settingsChangelogVersion" class="text-xl font-bold">v1.9.7</div>
+                            </div>
+                            <span class="app-chip-accent">Client</span>
+                        </div>
+                    </div>
+                    <div id="settingsChangelogList" class="space-y-3 custom-scrollbar max-h-[26rem] overflow-y-auto"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="themesModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-[62] p-4">
+            <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl modal-content theme-modal-shell" data-stop-propagation="true">
+                <div class="p-4 border-b flex justify-between items-center">
+                    <h3 class="text-lg font-bold" data-i18n="settings.themes">Themes</h3>
+                    <button id="closeThemesButton" class="text-xl p-2" title="Close" data-i18n-title="common.close">&times;</button>
+                </div>
+                <div class="theme-modal-body custom-scrollbar">
+                    <div id="themePresetsGrid" class="theme-presets-grid">
+                        <button type="button" class="theme-preset-card interactive-pop" data-theme-preset="light">
+                            <span class="theme-preset-check"><i class="fas fa-check"></i></span>
+                            <div class="theme-preset-preview theme-preset-preview-light">
+                                <span class="theme-preset-swatch"></span>
+                                <span class="theme-preset-swatch"></span>
+                                <span class="theme-preset-swatch"></span>
+                            </div>
+                            <div class="theme-preset-title">Light</div>
+                            <div class="theme-preset-description">Clean bright layout</div>
+                        </button>
+                        <button type="button" class="theme-preset-card interactive-pop" data-theme-preset="light-sky">
+                            <span class="theme-preset-check"><i class="fas fa-check"></i></span>
+                            <div class="theme-preset-preview theme-preset-preview-light-sky">
+                                <span class="theme-preset-swatch"></span>
+                                <span class="theme-preset-swatch"></span>
+                                <span class="theme-preset-swatch"></span>
+                            </div>
+                            <div class="theme-preset-title">Sky Light</div>
+                            <div class="theme-preset-description">Cool blue light theme</div>
+                        </button>
+                        <button type="button" class="theme-preset-card interactive-pop" data-theme-preset="sunset-light">
+                            <span class="theme-preset-check"><i class="fas fa-check"></i></span>
+                            <div class="theme-preset-preview theme-preset-preview-sunset-light">
+                                <span class="theme-preset-swatch"></span>
+                                <span class="theme-preset-swatch"></span>
+                                <span class="theme-preset-swatch"></span>
+                            </div>
+                            <div class="theme-preset-title">Sunset Light</div>
+                            <div class="theme-preset-description">Warm colorful light theme</div>
+                        </button>
+                        <button type="button" class="theme-preset-card interactive-pop" data-theme-preset="dark">
+                            <span class="theme-preset-check"><i class="fas fa-check"></i></span>
+                            <div class="theme-preset-preview theme-preset-preview-dark">
+                                <span class="theme-preset-swatch"></span>
+                                <span class="theme-preset-swatch"></span>
+                                <span class="theme-preset-swatch"></span>
+                            </div>
+                            <div class="theme-preset-title">Dark</div>
+                            <div class="theme-preset-description">Neutral dark theme</div>
+                        </button>
+                        <button type="button" class="theme-preset-card interactive-pop" data-theme-preset="ocean-dark">
+                            <span class="theme-preset-check"><i class="fas fa-check"></i></span>
+                            <div class="theme-preset-preview theme-preset-preview-ocean-dark">
+                                <span class="theme-preset-swatch"></span>
+                                <span class="theme-preset-swatch"></span>
+                                <span class="theme-preset-swatch"></span>
+                            </div>
+                            <div class="theme-preset-title">Ocean Dark</div>
+                            <div class="theme-preset-description">Blue-accent dark theme</div>
+                        </button>
+                        <button type="button" class="theme-preset-card interactive-pop" data-theme-preset="plum-dark">
+                            <span class="theme-preset-check"><i class="fas fa-check"></i></span>
+                            <div class="theme-preset-preview theme-preset-preview-plum-dark">
+                                <span class="theme-preset-swatch"></span>
+                                <span class="theme-preset-swatch"></span>
+                                <span class="theme-preset-swatch"></span>
+                            </div>
+                            <div class="theme-preset-title">Plum Dark</div>
+                            <div class="theme-preset-description">Purple-accent dark theme</div>
+                        </button>
+                        <button type="button" class="theme-preset-card interactive-pop" data-theme-preset="oled-dark">
+                            <span class="theme-preset-check"><i class="fas fa-check"></i></span>
+                            <div class="theme-preset-preview theme-preset-preview-dark">
+                                <span class="theme-preset-swatch" style="background:#000"></span>
+                                <span class="theme-preset-swatch" style="background:#0b0b0b"></span>
+                                <span class="theme-preset-swatch" style="background:#111"></span>
+                            </div>
+                            <div class="theme-preset-title">OLED Dark</div>
+                            <div class="theme-preset-description">Pure black high-contrast dark theme</div>
+                        </button>
+                        <button type="button" class="theme-preset-card interactive-pop" data-theme-preset="sunset-shimmer" data-theme-tier="silver">
+                            <span class="theme-preset-check"><i class="fas fa-check"></i></span>
+                            <div class="theme-preset-preview theme-preset-preview-sunset-shimmer">
+                                <span class="theme-preset-swatch"></span>
+                                <span class="theme-preset-swatch"></span>
+                                <span class="theme-preset-swatch"></span>
+                            </div>
+                            <div class="theme-preset-title">Sunset Shimmer</div>
+                            <div class="theme-preset-description">Silver dark orange sky theme</div>
+                        </button>
+                        <button type="button" class="theme-preset-card interactive-pop" data-theme-preset="cherry-red" data-theme-tier="silver">
+                            <span class="theme-preset-check"><i class="fas fa-check"></i></span>
+                            <div class="theme-preset-preview" style="background:linear-gradient(180deg,#3f0d18,#be123c 58%,#fb7185 100%);">
+                                <span class="theme-preset-swatch" style="background:#2a0c14"></span>
+                                <span class="theme-preset-swatch" style="background:#6e1d31"></span>
+                                <span class="theme-preset-swatch" style="background:#fb7185"></span>
+                            </div>
+                            <div class="theme-preset-title">Cherry Red</div>
+                            <div class="theme-preset-description">Silver cherry red corrected theme</div>
+                        </button>
+                        <button type="button" class="theme-preset-card interactive-pop" data-theme-preset="snowy-daydream" data-theme-tier="premium">
+                            <span class="theme-preset-check"><i class="fas fa-check"></i></span>
+                            <div class="theme-preset-preview theme-preset-preview-snowy-daydream">
+                                <span class="theme-preset-swatch"></span>
+                                <span class="theme-preset-swatch"></span>
+                                <span class="theme-preset-swatch"></span>
+                            </div>
+                            <div class="theme-preset-title">Snowy Daydream</div>
+                            <div class="theme-preset-description">Premium icy blue winter theme</div>
+                        </button>
+                        <button type="button" class="theme-preset-card interactive-pop" data-theme-preset="rainbow-ragebait" data-theme-tier="premium">
+                            <span class="theme-preset-check"><i class="fas fa-check"></i></span>
+                            <div class="theme-preset-preview theme-preset-preview-rainbow-ragebait">
+                                <span class="theme-preset-swatch"></span>
+                                <span class="theme-preset-swatch"></span>
+                                <span class="theme-preset-swatch"></span>
+                            </div>
+                            <div class="theme-preset-title">Rainbow Ragebait</div>
+                            <div class="theme-preset-description">Premium full-spectrum animated theme</div>
+                        </button>
+                        <button type="button" class="theme-preset-card interactive-pop" data-theme-preset="sanoki-meoa" data-theme-tier="premium">
+                            <span class="theme-preset-check"><i class="fas fa-check"></i></span>
+                            <div class="theme-preset-preview theme-preset-preview-sanoki-meoa">
+                                <span class="theme-preset-swatch"></span>
+                                <span class="theme-preset-swatch"></span>
+                                <span class="theme-preset-swatch"></span>
+                            </div>
+                            <div class="theme-preset-title">Sanoki Meoa</div>
+                            <div class="theme-preset-description">Premium violet starfield theme</div>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-4 border-t bg-gray-50 flex justify-end">
+                    <button id="resetThemeButton" class="px-4 py-2 rounded-lg hover:bg-gray-100 flex items-center gap-2 interactive-pop">
+                        <i class="fas fa-palette text-gray-500"></i>
+                        <span data-i18n="settings.resetTheme">Reset Theme</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="premiumModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-[63] p-4">
+            <div class="premium-modal modal-content relative" data-stop-propagation="true">
+                <button id="closePremiumModalButton" class="gift-detail-close" title="Close" data-i18n-title="common.close">&times;</button>
+                <div class="premium-modal-top">
+                    <div class="premium-modal-glow"></div>
+                    <canvas id="premiumParticlesCanvas" class="premium-particles-canvas" aria-hidden="true"></canvas>
+                    <div class="premium-star-stage">
+                        <canvas id="premiumStarCanvas" class="premium-star-canvas" aria-hidden="true"></canvas>
+                        <div id="premiumStarFallback" class="premium-star-fallback hidden"><i class="fas fa-star"></i></div>
+                    </div>
+                </div>
+                <div class="premium-modal-body custom-scrollbar">
+                    <div id="premiumHeroTitle" class="premium-hero-title" data-i18n="premium.heroTitleDefault">Get Premium</div>
+                    <div class="premium-copy-list">
+                        <p id="premiumBenefitLine1" class="premium-copy-line" data-i18n="premium.benefitQuality">Stream with much better Quality!</p>
+                        <p id="premiumBenefitLine2" class="premium-copy-line" data-i18n="premium.benefitCapacity">Create up to 10 Groups/Channels</p>
+                        <p id="premiumBenefitLine3" class="premium-copy-line" data-i18n="premium.benefitOutsideIran">Talk with People outside Iran!</p>
+                        <p id="premiumBenefitLine4" class="premium-copy-line" data-i18n="premium.benefitFiles">Upload files up to 100mb!</p>
+                        <p id="premiumBenefitLine5" class="premium-copy-line" data-i18n="premium.benefitFonts">Have custom fonts on your Name!</p>
+                        <p id="premiumBenefitLine6" class="premium-copy-line" data-i18n="premium.benefitColors">Color everything on your Profile!</p>
+                        <p id="premiumBenefitLine7" class="premium-copy-line" data-i18n="premium.benefitStars">Get 100 Stars for FREE!</p>
+                    </div>
+                    <button id="premiumBuyButton" class="premium-buy-button interactive-pop" type="button">
+                        <span class="premium-buy-sparkle" aria-hidden="true"></span>
+                        <span id="premiumBuyButtonLabel" data-i18n="premium.buy">Buy Premium</span>
+                    </button>
+                    <button id="premiumSilverUpsellButton" class="premium-silver-button interactive-pop" type="button" data-i18n="premium.buySilver">Cant afford it? buy Silver subscription!</button>
+                    <button id="premiumCancelButton" class="premium-silver-button interactive-pop hidden" type="button" data-i18n="premium.cancelSubscription">Cancel subscription</button>
+                    <button id="premiumViewProfileButton" class="premium-silver-button interactive-pop hidden" type="button" data-i18n="profile.viewProfile">View Profile</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="premiumPaymentModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-[64] p-4">
+            <div class="premium-payment-modal modal-content relative" data-stop-propagation="true">
+                <button id="closePremiumPaymentModalButton" class="gift-detail-close" title="Close" data-i18n-title="common.close">&times;</button>
+                <div class="premium-payment-grid">
+                    <div class="premium-payment-summary">
+                        <div id="premiumPaymentKicker" class="premium-payment-kicker" data-i18n="premium.paymentTitle">Premium Payment</div>
+                        <div id="premiumPaymentAmount" class="premium-payment-amount" data-i18n="premium.paymentAmount">50,000 Tomans</div>
+                        <div id="premiumPaymentHelp" class="premium-payment-help" data-i18n="premium.paymentInstructions">Send the payment to the card below, then upload the receipt image.</div>
+                        <div class="premium-payment-card">
+                            <div class="premium-payment-card-label" data-i18n="premium.cardNumberLabel">Card Number</div>
+                            <div id="premiumPaymentCardNumber" class="premium-payment-card-value"></div>
+                        </div>
+                        <div class="premium-payment-card">
+                            <div class="premium-payment-card-label" data-i18n="premium.cardholderLabel">Cardholder</div>
+                            <div id="premiumPaymentCardholderName" class="premium-payment-card-value"></div>
+                        </div>
+                    </div>
+                    <div class="premium-payment-form-wrap">
+                        <label class="premium-payment-upload" for="premiumReceiptInput">
+                            <input id="premiumReceiptInput" type="file" accept="image/*" class="hidden">
+                            <div id="premiumReceiptPreview" class="premium-payment-preview">
+                                <div class="premium-payment-preview-empty" data-i18n="premium.uploadReceipt">Upload receipt image</div>
+                            </div>
+                        </label>
+                        <button id="submitPremiumPaymentButton" class="premium-buy-button interactive-pop" type="button">
+                            <span class="premium-buy-sparkle" aria-hidden="true"></span>
+                            <span id="submitPremiumPaymentLabel" data-i18n="premium.submitPayment">Send Payment Request</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="premiumStarPickerModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-[65] p-4">
+            <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl modal-content theme-modal-shell" data-stop-propagation="true">
+                <div class="p-4 border-b flex items-center justify-between gap-3">
+                    <div>
+                        <h3 class="text-lg font-bold" data-i18n="profile.premiumStarPickerTitle">Premium Star Icon</h3>
+                        <p class="text-sm text-gray-500" data-i18n="profile.premiumStarPickerSubtitle">Choose a sticker or a template for your premium badge.</p>
+                    </div>
+                    <button id="closePremiumStarPickerButton" class="text-xl p-2" title="Close" data-i18n-title="common.close">&times;</button>
+                </div>
+                <div class="p-4 border-b flex flex-wrap gap-2">
+                    <button id="premiumStarSourceStickers" type="button" class="profile-sheet-secondary-button interactive-pop" data-i18n="profile.pickFromStickers">Pick from Stickers</button>
+                    <button id="premiumStarSourceTemplates" type="button" class="profile-sheet-secondary-button interactive-pop" data-i18n="profile.pickFromTemplates">Pick from Templates</button>
+                    <button id="premiumStarResetButton" type="button" class="profile-sheet-secondary-button interactive-pop ml-auto" data-i18n="profile.useDefaultPremiumStar">Use Default Star</button>
+                </div>
+                <div class="p-4">
+                    <div id="premiumStarPickerStatus" class="text-sm text-gray-500 mb-3" data-i18n="loading.updating">Updating...</div>
+                    <div id="premiumStarPickerGrid" class="profile-sheet-gifts-grid custom-scrollbar max-h-[24rem] overflow-y-auto"></div>
+                </div>
+                <div class="p-4 border-t bg-gray-50 flex justify-end gap-3">
+                    <button id="cancelPremiumStarPickerButton" type="button" class="profile-sheet-secondary-button interactive-pop" data-i18n="common.cancel">Cancel</button>
+                    <button id="savePremiumStarPickerButton" type="button" class="profile-sheet-primary-button interactive-pop" data-i18n="common.save">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Change Password Modal -->
+        <div id="changePasswordModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-[60] p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-sm modal-content" data-stop-propagation="true">
+                <div class="p-4 border-b flex justify-between items-center"><h3 class="text-lg font-bold" data-i18n="account.changePassword">Change Password</h3><button id="closeChangePasswordButton" class="text-xl p-2" title="Close" data-i18n-title="common.close">&times;</button></div>
+                <div class="p-6 space-y-4">
+                    <div><label for="changePasswordOld" class="block mb-1 text-sm font-medium" data-i18n="account.currentPassword">Current Password</label><input id="changePasswordOld" type="password" class="w-full px-4 py-2 border rounded-lg" placeholder="Current password" data-i18n-placeholder="account.currentPasswordPlaceholder"></div>
+                    <div><label for="changePasswordNew" class="block mb-1 text-sm font-medium" data-i18n="account.newPassword">New Password</label><input id="changePasswordNew" type="password" class="w-full px-4 py-2 border rounded-lg" placeholder="New password (min 4 characters)" data-i18n-placeholder="account.newPasswordPlaceholder"></div>
+                </div>
+                <div class="p-4 bg-gray-50 border-t flex justify-end gap-2">
+                    <button id="cancelChangePasswordButton" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg interactive-pop" data-i18n="common.cancel">Cancel</button>
+                    <button id="changePasswordButton" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg interactive-pop" data-i18n="account.changePassword">Change Password</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="devicesModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-[61] p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md modal-content">
+                <div class="p-4 border-b flex justify-between items-center">
+                    <h3 class="text-lg font-bold" data-i18n="account.devices">Devices</h3>
+                    <button id="closeDevicesButton" class="text-xl p-2" title="Close" data-i18n-title="common.close">&times;</button>
+                </div>
+                <div id="devicesList" class="p-4 max-h-[70vh] overflow-y-auto custom-scrollbar space-y-3"></div>
+            </div>
+        </div>
+
+        <!-- Delete Account Modal -->
+        <div id="deleteAccountModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-[60] p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-sm modal-content" data-stop-propagation="true">
+                <div class="p-4 border-b flex justify-between items-center"><h3 class="text-lg font-bold text-red-600" data-i18n="account.deleteAccount">Delete Account</h3><button id="closeDeleteAccountButton" class="text-xl p-2" title="Close" data-i18n-title="common.close">&times;</button></div>
+                <div class="p-6 space-y-4">
+                    <p class="text-sm text-gray-600" data-i18n="account.deleteAccountWarning">This will permanently delete your account and all your DMs. This cannot be undone.</p>
+                    <div><label for="deleteAccountPassword" class="block mb-1 text-sm font-medium" data-i18n="account.enterPasswordConfirm">Enter your password to confirm</label><input id="deleteAccountPassword" type="password" class="w-full px-4 py-2 border rounded-lg" placeholder="Password" data-i18n-placeholder="auth.password"></div>
+                    <label class="flex items-start gap-2 cursor-pointer">
+                        <input type="checkbox" id="deleteAccountConfirmCheck" class="mt-1 rounded border-gray-300 text-red-600 focus:ring-red-500">
+                        <span class="text-sm text-gray-700" data-i18n="account.deleteAccountConfirm">I understand this action is permanent and cannot be undone.</span>
+                    </label>
+                </div>
+                <div class="p-4 bg-gray-50 border-t flex justify-end gap-2">
+                    <button id="cancelDeleteAccountButton" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg interactive-pop" data-i18n="common.cancel">Cancel</button>
+                    <button id="deleteAccountButton" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg interactive-pop" data-i18n="account.deleteAccount">Delete Account</button>
+                </div>
+            </div>
+        </div>
+        
+        
+    <!-- Create Options Modal (Channel / Group) -->
+    <div id="createOptionsModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-sm modal-content">
+        <div class="p-4 border-b flex justify-between items-center bg-gray-50">
+          <h2 class="text-xl font-bold" data-i18n="create.title">Create</h2>
+          <button id="closeCreateOptionsModalButton" class="text-xl p-2" title="Close">&times;</button>
+        </div>
+        <div class="p-6 space-y-3">
+          <button id="createOptionCreateChannel" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg interactive-pop" data-i18n="chat.createChannel">Create Channel</button>
+          <button id="createOptionCreateGroup" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg interactive-pop" data-i18n="chat.createGroup">Create Group</button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Create Group Modal -->
+    <div id="createGroupModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-md modal-content">
+        <div class="p-4 border-b flex justify-between items-center bg-gray-50">
+          <h2 class="text-xl font-bold" data-i18n="chat.createNewGroup">Create New Group</h2>
+          <button id="closeGroupModalButton" class="text-xl p-2" title="Close">&times;</button>
+        </div>
+        <form id="createGroupForm" class="p-6 space-y-4">
+          <div>
+            <label for="groupNameInput" class="block mb-1 font-semibold" data-i18n="chat.groupName">Group Name</label>
+            <input id="groupNameInput" name="name" type="text" placeholder="e.g., Friends" data-i18n-placeholder="chat.groupNamePlaceholder" class="w-full px-4 py-2 border rounded-lg" required />
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="block font-semibold" data-i18n="chat.members">Members</label>
+              <span class="text-xs text-gray-500" data-i18n="chat.selectAtLeastOne">Select at least 1</span>
+            </div>
+            <div id="groupMembersList" class="border rounded-lg bg-gray-50 p-2 max-h-64 overflow-y-auto custom-scrollbar space-y-1"></div>
+          </div>
+        </form>
+        <div class="p-4 bg-gray-50 border-t flex justify-end">
+          <button id="submitCreateGroup" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg interactive-pop" data-i18n="chat.createGroup">Create Group</button>
+        </div>
+      </div>
+    </div>
+
+<div id="createChannelModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md modal-content">
+                <div class="p-4 border-b flex justify-between items-center">
+                    <h2 class="text-xl font-bold" data-i18n="chat.createNewChannel">Create New Channel</h2>
+                    <button id="closeChannelModalButton" class="text-xl p-2" title="Close">&times;</button>
+                </div>
+                <form id="createChannelForm" class="p-6 space-y-4">
+                     <div class="flex items-center">
+                        <input type="file" id="channelAvatarInput" name="avatar" class="hidden" accept="image/*">
+                        <div id="channelAvatarPreview" class="w-20 h-20 rounded-full mr-4 avatar-circle cursor-pointer ring-2 ring-offset-2 ring-transparent hover:ring-blue-500 transition-all bg-gray-200" title="Set Channel Avatar">
+                            <i class="fas fa-camera text-2xl text-gray-500"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold" data-i18n="chat.channelAvatar">Channel Avatar</h3>
+                            <p class="text-xs text-gray-500" data-i18n="chat.channelAvatarDesc">Click icon to upload an image.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="channelNameInput" class="block mb-1 font-semibold" data-i18n="chat.channelName">Channel Name</label>
+                        <input id="channelNameInput" name="name" type="text" placeholder="e.g., Cool Project Updates" data-i18n-placeholder="chat.channelNamePlaceholder" class="w-full px-4 py-2 border rounded-lg" required>
+                    </div>
+                     <div>
+                        <label for="channelHandleInput" class="block mb-1 font-semibold" data-i18n="chat.channelHandle">Channel Handle</label>
+                         <div class="flex items-center">
+                            <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">@</span>
+                            <input id="channelHandleInput" name="handle" type="text" placeholder="coolproject" data-i18n-placeholder="chat.channelHandlePlaceholder" class="w-full px-4 py-2 border rounded-r-lg" required pattern="[a-zA-Z0-9_]+">
+                         </div>
+                         <p class="text-xs text-gray-500 mt-1" data-i18n="chat.channelHandleRules">Only letters, numbers, and underscores.</p>
+                    </div>
+                </form>
+                <div class="p-4 bg-gray-50 border-t flex justify-end">
+                    <button id="submitCreateChannel" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg interactive-pop" data-i18n="chat.createChannel">Create Channel</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="confirmDeleteModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-50 p-4">
+             <div class="bg-white rounded-lg shadow-xl w-full max-w-sm modal-content"><div class="p-6 text-center"><p class="text-lg mb-4" data-i18n="chat.deleteMessageConfirm">Are you sure you want to delete this message?</p><p class="text-sm text-gray-500 mb-6" data-i18n="common.cannotUndo">This action cannot be undone.</p></div><div class="p-4 bg-gray-50 border-t flex justify-end items-center gap-4"><button id="cancelDeleteButton" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg interactive-pop" data-i18n="common.cancel">Cancel</button><button id="confirmDeleteButton" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg interactive-pop" data-i18n="common.delete">Delete</button></div></div>
+        </div>
+        
+        <div id="userInfoModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-2xl shadow-xl w-full max-w-md modal-content profile-sheet-modal relative">
+                <button id="closeUserInfoModal" class="absolute top-3 right-3 z-10 h-10 w-10 rounded-full bg-gray-100 text-xl text-gray-500 hover:text-gray-700">&times;</button>
+                <button id="userInfoMuteButton" class="absolute top-3 left-3 z-10 h-10 w-10 rounded-full bg-gray-100 text-lg text-gray-500 hover:text-gray-700 interactive-pop" title="Mute notifications">
+                    <i class="fas fa-volume-xmark"></i>
+                </button>
+                <div id="userInfoProfileSheet" class="p-5 md:p-6 profile-sheet profile-sheet-settings">
+                    <div class="profile-sheet-header pr-10">
+                        <div id="userInfoAvatar" class="profile-sheet-avatar avatar-circle shadow-sm"></div>
+                        <div class="min-w-0 flex-1">
+                            <h3 id="userInfoUsername" class="profile-sheet-name flex items-center leading-tight"></h3>
+                            <p id="userInfoStatus" class="profile-sheet-status"></p>
+                            <div class="profile-sheet-meta-row">
+                                <span id="userInfoCreatedAt" class="profile-sheet-meta-chip">Joined —</span>
+                                <span id="userInfoHandle" class="profile-sheet-meta-chip hidden"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="profile-sheet-tabs">
+                        <button type="button" id="userInfoTabBio" data-profile-tab="bio" class="profile-sheet-tab active" data-i18n="profile.bio">Bio</button>
+                        <button type="button" id="userInfoTabGifts" data-profile-tab="gifts" class="profile-sheet-tab" data-i18n="profile.gifts">Gifts</button>
+                        <button type="button" id="userInfoTabMutualGroups" data-profile-tab="mutual-groups" class="profile-sheet-tab" data-i18n="profile.mutualGroups">Mutual Groups</button>
+                    </div>
+                        <div class="profile-sheet-panels custom-scrollbar">
+                            <section id="userInfoPanelBio" data-profile-panel="bio" class="profile-sheet-panel">
+                                <div class="profile-sheet-section">
+                                    <div class="profile-sheet-section-title" data-i18n="profile.bio">Bio</div>
+                                    <p id="userInfoBio" class="profile-sheet-text">No bio yet.</p>
+                                </div>
+                            </section>
+                        <section id="userInfoPanelGifts" data-profile-panel="gifts" class="profile-sheet-panel hidden">
+                            <div id="userInfoGiftsSection" class="profile-sheet-section hidden">
+                                <div class="profile-sheet-section-title" data-i18n="profile.gifts">Gifts</div>
+                                <div id="userInfoGiftsList" class="profile-sheet-gifts-grid"></div>
+                            </div>
+                            <div id="userInfoNoGifts" class="profile-sheet-empty" data-i18n="gift.noGiftsYet">No gifts yet.</div>
+                        </section>
+                        <section id="userInfoPanelMutualGroups" data-profile-panel="mutual-groups" class="profile-sheet-panel hidden">
+                            <div class="profile-sheet-section">
+                                <div class="profile-sheet-section-title" data-i18n="profile.mutualGroups">Mutual Groups</div>
+                                <div id="userInfoMutualGroupsList" class="profile-sheet-groups-list"></div>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="mt-4">
+                        <button id="userInfoMessageButton" class="w-full rounded-xl bg-blue-500 px-4 py-3 font-bold text-white transition hover:bg-blue-600 interactive-pop" data-i18n="common.message">Message</button>
+                        <button id="userInfoContactButton" class="mt-3 w-full rounded-xl bg-emerald-500 px-4 py-3 font-bold text-white transition hover:bg-emerald-600 interactive-pop">Add to Contacts</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="giftDetailModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-[58] p-4">
+            <div class="gift-detail-modal modal-content relative">
+                <button id="closeGiftDetailModal" class="gift-detail-close" title="Close">&times;</button>
+                <div class="gift-detail-top">
+                    <div class="gift-detail-stage" aria-hidden="true">
+                        <div class="gift-detail-glow"></div>
+                        <div class="gift-detail-burst">
+                            <span class="gift-detail-sparkle" style="--dx:-6.3rem; --dy:-4.2rem; --size:1rem; --delay:-0.1s;"></span>
+                            <span class="gift-detail-sparkle" style="--dx:-3.4rem; --dy:-5.8rem; --size:0.86rem; --delay:-0.8s;"></span>
+                            <span class="gift-detail-sparkle" style="--dx:0.8rem; --dy:-6.2rem; --size:1.04rem; --delay:-0.4s;"></span>
+                            <span class="gift-detail-sparkle" style="--dx:4.6rem; --dy:-4.9rem; --size:0.92rem; --delay:-1.15s;"></span>
+                            <span class="gift-detail-sparkle" style="--dx:6.2rem; --dy:-1.1rem; --size:1.08rem; --delay:-0.55s;"></span>
+                            <span class="gift-detail-sparkle" style="--dx:6.4rem; --dy:2rem; --size:0.9rem; --delay:-1.5s;"></span>
+                            <span class="gift-detail-sparkle" style="--dx:3.9rem; --dy:5.1rem; --size:0.98rem; --delay:-1.0s;"></span>
+                            <span class="gift-detail-sparkle" style="--dx:-0.1rem; --dy:6.1rem; --size:1rem; --delay:-1.8s;"></span>
+                            <span class="gift-detail-sparkle" style="--dx:-4.5rem; --dy:5rem; --size:0.88rem; --delay:-1.25s;"></span>
+                            <span class="gift-detail-sparkle" style="--dx:-6.3rem; --dy:1.4rem; --size:1.02rem; --delay:-0.22s;"></span>
+                        </div>
+                        <div class="gift-detail-icon-wrap">
+                            <div id="giftDetailIcon" class="gift-detail-icon">??</div>
+                        </div>
+                    </div>
+                    <h3 id="giftDetailName" class="gift-detail-name">Gift</h3>
+                </div>
+                <div class="gift-detail-body">
+                    <div class="gift-detail-row">
+                        <span class="gift-detail-label" data-i18n="gift.price">Price</span>
+                        <span id="giftDetailPrice" class="gift-detail-value">0.0 Stars</span>
+                    </div>
+                    <div class="gift-detail-row">
+                        <span class="gift-detail-label" data-i18n="gift.amountsIssued">Amounts issued</span>
+                        <span id="giftDetailIssued" class="gift-detail-value">0 / 0</span>
+                    </div>
+                    <div id="giftDetailStatus" class="gift-detail-status"></div>
+                    <button id="giftDetailBuyButton" class="gift-detail-buy interactive-pop" type="button" data-i18n="gift.buy">Buy</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="giftActionModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-[59] p-4">
+            <div class="gift-action-modal modal-content relative">
+                <button id="closeGiftActionModal" class="gift-detail-close" title="Close">&times;</button>
+                <div class="gift-action-body">
+                    <h3 class="gift-action-title" data-i18n="gift.chooseUse">Choose how to use this gift</h3>
+                    <div class="gift-detail-choice-grid">
+                        <button id="giftActionOwnButton" class="gift-detail-secondary interactive-pop" type="button" data-i18n="gift.ownIt">Own it</button>
+                        <button id="giftActionGiftButton" class="gift-detail-secondary interactive-pop" type="button" data-i18n="gift.giveAway">Give away</button>
+                    </div>
+                    <div id="giftActionChatField" class="gift-detail-chat-field hidden">
+                        <label for="giftActionChatSelect" class="gift-detail-chat-label" data-i18n="gift.selectChat">Select a chat</label>
+                        <select id="giftActionChatSelect" class="gift-detail-chat-select"></select>
+                        <button id="giftActionConfirmButton" class="gift-detail-buy interactive-pop" type="button" data-i18n="gift.sendToChat">Send to chat</button>
+                    </div>
+                    <div id="giftActionStatus" class="gift-detail-status"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="walletModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-[55] p-4">
+            <div class="stars-wallet-modal modal-content overflow-hidden">
+                <button id="closeWalletModal" class="stars-wallet-close" title="Close">&times;</button>
+                <div class="stars-wallet-hero">
+                    <div class="stars-wallet-float stars-wallet-float-1" aria-hidden="true">
+                        <svg class="telegram-star-icon telegram-star-icon-sm" viewBox="0 0 24 24" fill="none"><path d="M8.7221 7.50194L11.1473 2.67049C11.4277 2.11345 12.106 1.88988 12.6593 2.17029C12.8753 2.28018 13.0496 2.45828 13.1595 2.67807L15.452 7.339C15.6377 7.72173 16.0053 7.97941 16.4259 8.02867L21.2195 8.60465C21.8712 8.68423 22.3373 9.27916 22.2615 9.93473C22.2274 10.2038 22.1062 10.4539 21.9129 10.6433L18.1198 14.3835C17.9644 14.535 17.8924 14.7472 17.9189 14.9632L18.5517 20.0107C18.6427 20.7345 18.1311 21.3938 17.4111 21.4848C17.1383 21.5189 16.8655 21.4696 16.623 21.337L12.6176 19.1467C12.3258 18.9876 11.9772 18.9838 11.6854 19.1353L7.53223 21.265C6.94867 21.5643 6.23627 21.3294 5.93691 20.742C5.82322 20.5222 5.78533 20.2759 5.81944 20.0334L6.14911 17.7143C6.31205 16.5813 7.01309 15.5961 8.02864 15.0769L12.6365 12.7237C12.7578 12.6631 12.807 12.5115 12.7464 12.3865C12.6972 12.2917 12.5948 12.2349 12.4887 12.25L6.85015 13.061C5.98996 13.1822 5.1184 12.9397 4.4401 12.3865L2.56436 10.8555C2.03006 10.4198 1.9429 9.624 2.37868 9.08591C2.58331 8.83581 2.87509 8.67286 3.1934 8.63118L8.00591 8.01351C8.31285 7.97183 8.58189 7.78236 8.7221 7.50194Z" fill="url(#tgStarGradient1)"/><path d="M12.989 3.53063C12.5001 3.42074 11.981 3.65568 11.746 4.12557L9.31704 8.95703C9.17684 9.23744 8.91158 9.42691 8.60085 9.46859L3.78834 10.09C3.47761 10.1317 3.19341 10.2833 2.99257 10.522L4.77358 11.9772C5.33441 12.4357 6.06197 12.6365 6.77816 12.5342L12.413 11.7271C12.7464 11.6816 13.0723 11.8483 13.2201 12.1477C13.4134 12.5304 13.2618 13.0003 12.8791 13.1973L11.4088 13.9476L13.0837 13.7051C13.1898 13.69 13.2959 13.7468 13.3414 13.8415C13.4058 13.9666 13.3527 14.1182 13.2315 14.1788L8.62359 16.532C7.60803 17.0511 6.907 18.0364 6.74405 19.1694L6.52806 20.6738C6.72511 20.8708 7.03584 20.9239 7.29351 20.7913L11.4391 18.6616C11.89 18.4305 12.4243 18.4381 12.8677 18.6806L16.8731 20.8708C17.0171 20.9504 17.1838 20.9807 17.3467 20.9618C17.7711 20.9087 18.0781 20.5146 18.025 20.0789L17.396 15.0276C17.3505 14.6487 17.4794 14.2735 17.7484 14.0083L21.5416 10.2682C21.606 10.2037 21.6553 10.1279 21.6894 10.0446L17.0208 9.48375C16.6002 9.43449 16.2364 9.17302 16.047 8.79408L15.8651 8.41893C15.4824 8.2522 15.1678 7.95663 14.9784 7.5739L12.989 3.53063Z" fill="url(#tgStarGradient2)"/><path d="M12.898 1.69684C12.0795 1.2838 11.0867 1.61348 10.6774 2.43198L8.24845 7.26723C8.18782 7.38849 8.07035 7.47186 7.93772 7.48701L3.12521 8.10847C2.67048 8.16531 2.25365 8.40025 1.96566 8.75646C1.34799 9.52191 1.46546 10.6436 2.22713 11.265L4.10666 12.7997C4.89864 13.4439 5.91798 13.7281 6.92596 13.5841L10.9086 13.0119L7.78615 14.6073C6.61523 15.206 5.81188 16.3352 5.6262 17.6388L5.29273 19.9579C5.24347 20.3103 5.30031 20.6665 5.46326 20.9848C5.89146 21.8298 6.92975 22.1671 7.77478 21.7351L11.9241 19.6054C12.0606 19.5335 12.2235 19.5372 12.3599 19.613L16.3653 21.7995C16.7026 21.9852 17.0929 22.061 17.4756 22.0117C18.4874 21.8829 19.1998 20.9545 19.0747 19.9465L18.4457 14.8953C18.4381 14.846 18.457 14.7929 18.4911 14.7588L22.2843 11.0187C22.5609 10.7421 22.739 10.3821 22.7845 9.99558C22.8944 9.05203 22.2275 8.19563 21.2839 8.08195L16.4866 7.50596C16.2478 7.47944 16.0356 7.32786 15.9257 7.10808L13.6369 2.44335C13.4778 2.12125 13.2163 1.85979 12.898 1.69684Z" fill="url(#tgStarGradient3)"/><defs><linearGradient id="tgStarGradient1" x1="3.71992" y1="20.962" x2="22.3736" y2="3.25877" gradientUnits="userSpaceOnUse"><stop stop-color="#FDEB32"/><stop offset="0.439058" stop-color="#FEBD04"/><stop offset="1" stop-color="#D75902"/></linearGradient><linearGradient id="tgStarGradient2" x1="16.8348" y1="4.3794" x2="8.59084" y2="18.0947" gradientUnits="userSpaceOnUse"><stop stop-color="#FFD45C"/><stop offset="1" stop-color="#FF8A00"/></linearGradient><linearGradient id="tgStarGradient3" x1="12.0731" y1="1.58057" x2="12.0731" y2="22.0264" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF1AE"/><stop offset="1" stop-color="#E17B00"/></linearGradient></defs></svg>
+                    </div>
+                    <div class="stars-wallet-float stars-wallet-float-2" aria-hidden="true">
+                        <svg class="telegram-star-icon telegram-star-icon-xs" viewBox="0 0 24 24" fill="none"><path d="M8.7221 7.50194L11.1473 2.67049C11.4277 2.11345 12.106 1.88988 12.6593 2.17029C12.8753 2.28018 13.0496 2.45828 13.1595 2.67807L15.452 7.339C15.6377 7.72173 16.0053 7.97941 16.4259 8.02867L21.2195 8.60465C21.8712 8.68423 22.3373 9.27916 22.2615 9.93473C22.2274 10.2038 22.1062 10.4539 21.9129 10.6433L18.1198 14.3835C17.9644 14.535 17.8924 14.7472 17.9189 14.9632L18.5517 20.0107C18.6427 20.7345 18.1311 21.3938 17.4111 21.4848C17.1383 21.5189 16.8655 21.4696 16.623 21.337L12.6176 19.1467C12.3258 18.9876 11.9772 18.9838 11.6854 19.1353L7.53223 21.265C6.94867 21.5643 6.23627 21.3294 5.93691 20.742C5.82322 20.5222 5.78533 20.2759 5.81944 20.0334L6.14911 17.7143C6.31205 16.5813 7.01309 15.5961 8.02864 15.0769L12.6365 12.7237C12.7578 12.6631 12.807 12.5115 12.7464 12.3865C12.6972 12.2917 12.5948 12.2349 12.4887 12.25L6.85015 13.061C5.98996 13.1822 5.1184 12.9397 4.4401 12.3865L2.56436 10.8555C2.03006 10.4198 1.9429 9.624 2.37868 9.08591C2.58331 8.83581 2.87509 8.67286 3.1934 8.63118L8.00591 8.01351C8.31285 7.97183 8.58189 7.78236 8.7221 7.50194Z" fill="url(#tgStarGradient1b)"/><path d="M12.989 3.53063C12.5001 3.42074 11.981 3.65568 11.746 4.12557L9.31704 8.95703C9.17684 9.23744 8.91158 9.42691 8.60085 9.46859L3.78834 10.09C3.47761 10.1317 3.19341 10.2833 2.99257 10.522L4.77358 11.9772C5.33441 12.4357 6.06197 12.6365 6.77816 12.5342L12.413 11.7271C12.7464 11.6816 13.0723 11.8483 13.2201 12.1477C13.4134 12.5304 13.2618 13.0003 12.8791 13.1973L11.4088 13.9476L13.0837 13.7051C13.1898 13.69 13.2959 13.7468 13.3414 13.8415C13.4058 13.9666 13.3527 14.1182 13.2315 14.1788L8.62359 16.532C7.60803 17.0511 6.907 18.0364 6.74405 19.1694L6.52806 20.6738C6.72511 20.8708 7.03584 20.9239 7.29351 20.7913L11.4391 18.6616C11.89 18.4305 12.4243 18.4381 12.8677 18.6806L16.8731 20.8708C17.0171 20.9504 17.1838 20.9807 17.3467 20.9618C17.7711 20.9087 18.0781 20.5146 18.025 20.0789L17.396 15.0276C17.3505 14.6487 17.4794 14.2735 17.7484 14.0083L21.5416 10.2682C21.606 10.2037 21.6553 10.1279 21.6894 10.0446L17.0208 9.48375C16.6002 9.43449 16.2364 9.17302 16.047 8.79408L15.8651 8.41893C15.4824 8.2522 15.1678 7.95663 14.9784 7.5739L12.989 3.53063Z" fill="url(#tgStarGradient2b)"/><path d="M12.898 1.69684C12.0795 1.2838 11.0867 1.61348 10.6774 2.43198L8.24845 7.26723C8.18782 7.38849 8.07035 7.47186 7.93772 7.48701L3.12521 8.10847C2.67048 8.16531 2.25365 8.40025 1.96566 8.75646C1.34799 9.52191 1.46546 10.6436 2.22713 11.265L4.10666 12.7997C4.89864 13.4439 5.91798 13.7281 6.92596 13.5841L10.9086 13.0119L7.78615 14.6073C6.61523 15.206 5.81188 16.3352 5.6262 17.6388L5.29273 19.9579C5.24347 20.3103 5.30031 20.6665 5.46326 20.9848C5.89146 21.8298 6.92975 22.1671 7.77478 21.7351L11.9241 19.6054C12.0606 19.5335 12.2235 19.5372 12.3599 19.613L16.3653 21.7995C16.7026 21.9852 17.0929 22.061 17.4756 22.0117C18.4874 21.8829 19.1998 20.9545 19.0747 19.9465L18.4457 14.8953C18.4381 14.846 18.457 14.7929 18.4911 14.7588L22.2843 11.0187C22.5609 10.7421 22.739 10.3821 22.7845 9.99558C22.8944 9.05203 22.2275 8.19563 21.2839 8.08195L16.4866 7.50596C16.2478 7.47944 16.0356 7.32786 15.9257 7.10808L13.6369 2.44335C13.4778 2.12125 13.2163 1.85979 12.898 1.69684Z" fill="url(#tgStarGradient3b)"/><defs><linearGradient id="tgStarGradient1b" x1="3.71992" y1="20.962" x2="22.3736" y2="3.25877" gradientUnits="userSpaceOnUse"><stop stop-color="#FDEB32"/><stop offset="0.439058" stop-color="#FEBD04"/><stop offset="1" stop-color="#D75902"/></linearGradient><linearGradient id="tgStarGradient2b" x1="16.8348" y1="4.3794" x2="8.59084" y2="18.0947" gradientUnits="userSpaceOnUse"><stop stop-color="#FFD45C"/><stop offset="1" stop-color="#FF8A00"/></linearGradient><linearGradient id="tgStarGradient3b" x1="12.0731" y1="1.58057" x2="12.0731" y2="22.0264" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF1AE"/><stop offset="1" stop-color="#E17B00"/></linearGradient></defs></svg>
+                    </div>
+                    <div class="stars-wallet-float stars-wallet-float-3" aria-hidden="true">
+                        <svg class="telegram-star-icon telegram-star-icon-xs" viewBox="0 0 24 24" fill="none"><path d="M8.7221 7.50194L11.1473 2.67049C11.4277 2.11345 12.106 1.88988 12.6593 2.17029C12.8753 2.28018 13.0496 2.45828 13.1595 2.67807L15.452 7.339C15.6377 7.72173 16.0053 7.97941 16.4259 8.02867L21.2195 8.60465C21.8712 8.68423 22.3373 9.27916 22.2615 9.93473C22.2274 10.2038 22.1062 10.4539 21.9129 10.6433L18.1198 14.3835C17.9644 14.535 17.8924 14.7472 17.9189 14.9632L18.5517 20.0107C18.6427 20.7345 18.1311 21.3938 17.4111 21.4848C17.1383 21.5189 16.8655 21.4696 16.623 21.337L12.6176 19.1467C12.3258 18.9876 11.9772 18.9838 11.6854 19.1353L7.53223 21.265C6.94867 21.5643 6.23627 21.3294 5.93691 20.742C5.82322 20.5222 5.78533 20.2759 5.81944 20.0334L6.14911 17.7143C6.31205 16.5813 7.01309 15.5961 8.02864 15.0769L12.6365 12.7237C12.7578 12.6631 12.807 12.5115 12.7464 12.3865C12.6972 12.2917 12.5948 12.2349 12.4887 12.25L6.85015 13.061C5.98996 13.1822 5.1184 12.9397 4.4401 12.3865L2.56436 10.8555C2.03006 10.4198 1.9429 9.624 2.37868 9.08591C2.58331 8.83581 2.87509 8.67286 3.1934 8.63118L8.00591 8.01351C8.31285 7.97183 8.58189 7.78236 8.7221 7.50194Z" fill="url(#tgStarGradient1c)"/><path d="M12.989 3.53063C12.5001 3.42074 11.981 3.65568 11.746 4.12557L9.31704 8.95703C9.17684 9.23744 8.91158 9.42691 8.60085 9.46859L3.78834 10.09C3.47761 10.1317 3.19341 10.2833 2.99257 10.522L4.77358 11.9772C5.33441 12.4357 6.06197 12.6365 6.77816 12.5342L12.413 11.7271C12.7464 11.6816 13.0723 11.8483 13.2201 12.1477C13.4134 12.5304 13.2618 13.0003 12.8791 13.1973L11.4088 13.9476L13.0837 13.7051C13.1898 13.69 13.2959 13.7468 13.3414 13.8415C13.4058 13.9666 13.3527 14.1182 13.2315 14.1788L8.62359 16.532C7.60803 17.0511 6.907 18.0364 6.74405 19.1694L6.52806 20.6738C6.72511 20.8708 7.03584 20.9239 7.29351 20.7913L11.4391 18.6616C11.89 18.4305 12.4243 18.4381 12.8677 18.6806L16.8731 20.8708C17.0171 20.9504 17.1838 20.9807 17.3467 20.9618C17.7711 20.9087 18.0781 20.5146 18.025 20.0789L17.396 15.0276C17.3505 14.6487 17.4794 14.2735 17.7484 14.0083L21.5416 10.2682C21.606 10.2037 21.6553 10.1279 21.6894 10.0446L17.0208 9.48375C16.6002 9.43449 16.2364 9.17302 16.047 8.79408L15.8651 8.41893C15.4824 8.2522 15.1678 7.95663 14.9784 7.5739L12.989 3.53063Z" fill="url(#tgStarGradient2c)"/><path d="M12.898 1.69684C12.0795 1.2838 11.0867 1.61348 10.6774 2.43198L8.24845 7.26723C8.18782 7.38849 8.07035 7.47186 7.93772 7.48701L3.12521 8.10847C2.67048 8.16531 2.25365 8.40025 1.96566 8.75646C1.34799 9.52191 1.46546 10.6436 2.22713 11.265L4.10666 12.7997C4.89864 13.4439 5.91798 13.7281 6.92596 13.5841L10.9086 13.0119L7.78615 14.6073C6.61523 15.206 5.81188 16.3352 5.6262 17.6388L5.29273 19.9579C5.24347 20.3103 5.30031 20.6665 5.46326 20.9848C5.89146 21.8298 6.92975 22.1671 7.77478 21.7351L11.9241 19.6054C12.0606 19.5335 12.2235 19.5372 12.3599 19.613L16.3653 21.7995C16.7026 21.9852 17.0929 22.061 17.4756 22.0117C18.4874 21.8829 19.1998 20.9545 19.0747 19.9465L18.4457 14.8953C18.4381 14.846 18.457 14.7929 18.4911 14.7588L22.2843 11.0187C22.5609 10.7421 22.739 10.3821 22.7845 9.99558C22.8944 9.05203 22.2275 8.19563 21.2839 8.08195L16.4866 7.50596C16.2478 7.47944 16.0356 7.32786 15.9257 7.10808L13.6369 2.44335C13.4778 2.12125 13.2163 1.85979 12.898 1.69684Z" fill="url(#tgStarGradient3c)"/><defs><linearGradient id="tgStarGradient1c" x1="3.71992" y1="20.962" x2="22.3736" y2="3.25877" gradientUnits="userSpaceOnUse"><stop stop-color="#FDEB32"/><stop offset="0.439058" stop-color="#FEBD04"/><stop offset="1" stop-color="#D75902"/></linearGradient><linearGradient id="tgStarGradient2c" x1="16.8348" y1="4.3794" x2="8.59084" y2="18.0947" gradientUnits="userSpaceOnUse"><stop stop-color="#FFD45C"/><stop offset="1" stop-color="#FF8A00"/></linearGradient><linearGradient id="tgStarGradient3c" x1="12.0731" y1="1.58057" x2="12.0731" y2="22.0264" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF1AE"/><stop offset="1" stop-color="#E17B00"/></linearGradient></defs></svg>
+                    </div>
+                    <div class="stars-wallet-kicker" data-i18n="wallet.localizedStarsName">Noveo Stars</div>
+                    <div class="stars-wallet-main-icon" aria-hidden="true">
+                        <svg class="telegram-star-icon telegram-star-icon-lg" viewBox="0 0 24 24" fill="none"><path d="M8.7221 7.50194L11.1473 2.67049C11.4277 2.11345 12.106 1.88988 12.6593 2.17029C12.8753 2.28018 13.0496 2.45828 13.1595 2.67807L15.452 7.339C15.6377 7.72173 16.0053 7.97941 16.4259 8.02867L21.2195 8.60465C21.8712 8.68423 22.3373 9.27916 22.2615 9.93473C22.2274 10.2038 22.1062 10.4539 21.9129 10.6433L18.1198 14.3835C17.9644 14.535 17.8924 14.7472 17.9189 14.9632L18.5517 20.0107C18.6427 20.7345 18.1311 21.3938 17.4111 21.4848C17.1383 21.5189 16.8655 21.4696 16.623 21.337L12.6176 19.1467C12.3258 18.9876 11.9772 18.9838 11.6854 19.1353L7.53223 21.265C6.94867 21.5643 6.23627 21.3294 5.93691 20.742C5.82322 20.5222 5.78533 20.2759 5.81944 20.0334L6.14911 17.7143C6.31205 16.5813 7.01309 15.5961 8.02864 15.0769L12.6365 12.7237C12.7578 12.6631 12.807 12.5115 12.7464 12.3865C12.6972 12.2917 12.5948 12.2349 12.4887 12.25L6.85015 13.061C5.98996 13.1822 5.1184 12.9397 4.4401 12.3865L2.56436 10.8555C2.03006 10.4198 1.9429 9.624 2.37868 9.08591C2.58331 8.83581 2.87509 8.67286 3.1934 8.63118L8.00591 8.01351C8.31285 7.97183 8.58189 7.78236 8.7221 7.50194Z" fill="url(#tgStarGradient1d)"/><path d="M12.989 3.53063C12.5001 3.42074 11.981 3.65568 11.746 4.12557L9.31704 8.95703C9.17684 9.23744 8.91158 9.42691 8.60085 9.46859L3.78834 10.09C3.47761 10.1317 3.19341 10.2833 2.99257 10.522L4.77358 11.9772C5.33441 12.4357 6.06197 12.6365 6.77816 12.5342L12.413 11.7271C12.7464 11.6816 13.0723 11.8483 13.2201 12.1477C13.4134 12.5304 13.2618 13.0003 12.8791 13.1973L11.4088 13.9476L13.0837 13.7051C13.1898 13.69 13.2959 13.7468 13.3414 13.8415C13.4058 13.9666 13.3527 14.1182 13.2315 14.1788L8.62359 16.532C7.60803 17.0511 6.907 18.0364 6.74405 19.1694L6.52806 20.6738C6.72511 20.8708 7.03584 20.9239 7.29351 20.7913L11.4391 18.6616C11.89 18.4305 12.4243 18.4381 12.8677 18.6806L16.8731 20.8708C17.0171 20.9504 17.1838 20.9807 17.3467 20.9618C17.7711 20.9087 18.0781 20.5146 18.025 20.0789L17.396 15.0276C17.3505 14.6487 17.4794 14.2735 17.7484 14.0083L21.5416 10.2682C21.606 10.2037 21.6553 10.1279 21.6894 10.0446L17.0208 9.48375C16.6002 9.43449 16.2364 9.17302 16.047 8.79408L15.8651 8.41893C15.4824 8.2522 15.1678 7.95663 14.9784 7.5739L12.989 3.53063Z" fill="url(#tgStarGradient2d)"/><path d="M12.898 1.69684C12.0795 1.2838 11.0867 1.61348 10.6774 2.43198L8.24845 7.26723C8.18782 7.38849 8.07035 7.47186 7.93772 7.48701L3.12521 8.10847C2.67048 8.16531 2.25365 8.40025 1.96566 8.75646C1.34799 9.52191 1.46546 10.6436 2.22713 11.265L4.10666 12.7997C4.89864 13.4439 5.91798 13.7281 6.92596 13.5841L10.9086 13.0119L7.78615 14.6073C6.61523 15.206 5.81188 16.3352 5.6262 17.6388L5.29273 19.9579C5.24347 20.3103 5.30031 20.6665 5.46326 20.9848C5.89146 21.8298 6.92975 22.1671 7.77478 21.7351L11.9241 19.6054C12.0606 19.5335 12.2235 19.5372 12.3599 19.613L16.3653 21.7995C16.7026 21.9852 17.0929 22.061 17.4756 22.0117C18.4874 21.8829 19.1998 20.9545 19.0747 19.9465L18.4457 14.8953C18.4381 14.846 18.457 14.7929 18.4911 14.7588L22.2843 11.0187C22.5609 10.7421 22.739 10.3821 22.7845 9.99558C22.8944 9.05203 22.2275 8.19563 21.2839 8.08195L16.4866 7.50596C16.2478 7.47944 16.0356 7.32786 15.9257 7.10808L13.6369 2.44335C13.4778 2.12125 13.2163 1.85979 12.898 1.69684Z" fill="url(#tgStarGradient3d)"/><defs><linearGradient id="tgStarGradient1d" x1="3.71992" y1="20.962" x2="22.3736" y2="3.25877" gradientUnits="userSpaceOnUse"><stop stop-color="#FDEB32"/><stop offset="0.439058" stop-color="#FEBD04"/><stop offset="1" stop-color="#D75902"/></linearGradient><linearGradient id="tgStarGradient2d" x1="16.8348" y1="4.3794" x2="8.59084" y2="18.0947" gradientUnits="userSpaceOnUse"><stop stop-color="#FFD45C"/><stop offset="1" stop-color="#FF8A00"/></linearGradient><linearGradient id="tgStarGradient3d" x1="12.0731" y1="1.58057" x2="12.0731" y2="22.0264" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF1AE"/><stop offset="1" stop-color="#E17B00"/></linearGradient></defs></svg>
+                    </div>
+                    <h3 class="stars-wallet-title" data-i18n="wallet.stars">Stars</h3>
+                    <div id="walletBalanceValue" class="stars-wallet-balance">0.0 Stars</div>
+                    <div class="stars-wallet-pill-row">
+                        <div id="walletTransactionCount" class="stars-wallet-pill">0 transactions</div>
+                    </div>
+                </div>
+                <div class="stars-wallet-body">
+                    <div class="stars-wallet-sections">
+                        <section id="walletMainSection" class="stars-wallet-section is-active">
+                            <div class="stars-wallet-main-actions">
+                                <button id="walletOpenSendSection" class="stars-wallet-button stars-wallet-button-blue interactive-pop" data-i18n="wallet.sendStars">Send Stars</button>
+                                <button id="walletOpenTransactionsSection" class="stars-wallet-button stars-wallet-button-slate interactive-pop" data-i18n="wallet.transactions">Transactions</button>
+                            </div>
+                        </section>
+                        <section id="walletSendSection" class="stars-wallet-section hidden">
+                            <div class="stars-wallet-subpage-header">
+                                <button id="walletBackToMain" class="stars-wallet-back-button interactive-pop" type="button"><i class="fas fa-arrow-left"></i><span data-i18n="common.back">Back</span></button>
+                                <div>
+                                    <div class="stars-wallet-panel-title" data-i18n="wallet.sendStars">Send Stars</div>
+                                    <div class="stars-wallet-panel-subtitle" data-i18n="wallet.sendStarsSubtitle">Pick a chat, then send the Stars giveaway into that chat.</div>
+                                </div>
+                            </div>
+                            <section class="stars-wallet-action-card stars-wallet-action-card-accent">
+                                <div class="stars-wallet-field">
+                                    <label for="walletGiveawayChat" data-i18n="chat.chat">Chat</label>
+                                    <select id="walletGiveawayChat" class="stars-wallet-input"></select>
+                                </div>
+                                <div class="stars-wallet-field">
+                                    <label for="walletGiveawayAmount" data-i18n="wallet.amount">Amount</label>
+                                    <input id="walletGiveawayAmount" type="number" step="0.01" min="0.01" placeholder="Amount (e.g. 1.00)" data-i18n-placeholder="wallet.amountPlaceholder" class="stars-wallet-input">
+                                </div>
+                                <button id="walletGiveawaySubmit" class="stars-wallet-button stars-wallet-button-violet interactive-pop" data-i18n="common.send">Send</button>
+                            </section>
+                        </section>
+                        <section id="walletTransactionsSection" class="stars-wallet-section hidden">
+                            <div class="stars-wallet-subpage-header">
+                                <button id="walletTransactionsBackToMain" class="stars-wallet-back-button interactive-pop" type="button"><i class="fas fa-arrow-left"></i><span data-i18n="common.back">Back</span></button>
+                                <div>
+                                    <div class="stars-wallet-panel-title" data-i18n="wallet.transactions">Transactions</div>
+                                    <div class="stars-wallet-panel-subtitle" data-i18n="wallet.recentActivity">Recent Stars activity.</div>
+                                </div>
+                            </div>
+                            <section class="stars-wallet-panel">
+                                <div id="walletTransactionsList" class="stars-wallet-list stars-wallet-list-transactions"></div>
+                            </section>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="mediaViewerModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-[60] p-4">
+            <button id="closeMediaViewer" class="absolute top-4 right-4 text-3xl text-white hover:text-gray-300 z-[70]">&times;</button>
+            <div class="relative max-w-full max-h-full flex items-center justify-center">
+                <img id="mediaViewerImage" class="hidden max-w-[90vw] max-h-[90vh] object-contain rounded-lg">
+                <video id="mediaViewerVideo" class="hidden max-w-[90vw] max-h-[90vh] object-contain rounded-lg" controls preload="none"></video>
+            </div>
+        </div>
+        
+        <div id="forwardMessageModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md modal-content">
+                <div class="p-4 border-b flex justify-between items-center">
+                    <h2 class="text-xl font-bold" data-i18n="chat.forwardTo">Forward Message to...</h2>
+                    <button id="closeForwardModalButton" class="text-xl p-2" title="Close">&times;</button>
+                </div>
+                <div id="forwardContactsList" class="p-2 space-y-1 max-h-80 overflow-y-auto custom-scrollbar">
+                </div>
+                <div class="p-4 bg-gray-50 border-t flex justify-end items-center">
+                    <button id="cancelForwardButton" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg interactive-pop mr-2" data-i18n="common.cancel">Cancel</button>
+                    <button id="confirmForwardButton" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg interactive-pop" data-i18n="common.send">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Settings Modal (for owners of channels/groups) -->
+        <div id="chatSettingsModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md modal-content">
+                <div class="p-4 border-b flex justify-between items-center">
+                    <h2 id="chatSettingsTitle" class="text-xl font-bold" data-i18n="chat.chatSettings">Chat Settings</h2>
+                    <button id="chatSettingsCloseBtn" class="text-xl p-2" title="Close">&times;</button>
+                </div>
+                <div class="p-4 space-y-4">
+                    <div>
+                        <div class="text-sm text-gray-500" data-i18n="chat.chat">Chat:</div>
+                        <div id="chatSettingsChatName" class="font-semibold"></div>
+                    </div>
+                    <label id="chatSettingsSeenReceiptsWrap" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer transition hidden">
+                        <input id="chatSettingsSeenReceiptsToggle" type="checkbox" class="h-4 w-4 rounded cursor-pointer">
+                        <div>
+                            <div class="font-medium" data-i18n="chat.seenReceipts">Seen Receipts</div>
+                            <div class="text-xs text-gray-500" data-i18n="chat.seenReceiptsDesc">Allow members to see who read their messages</div>
+                        </div>
+                    </label>
+                    <div>
+                        <div class="text-sm text-gray-500 mb-2" data-i18n="chat.members">Members</div>
+                        <div id="chatSettingsMembersList" class="max-h-48 overflow-y-auto custom-scrollbar space-y-2"></div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="chatSettingsEditHandleBtn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg" data-i18n="chat.editHandle">Edit Handle</button>
+                        <button id="chatSettingsDeleteBtn" class="ml-auto bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg" data-i18n="chat.deleteChat">Delete Chat</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="editHandleModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-[70] p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md modal-content">
+                <div class="p-4 border-b flex justify-between items-center">
+                    <h2 id="editHandleTitle" class="text-xl font-bold" data-i18n="chat.editHandle">Edit Handle</h2>
+                    <button id="editHandleCloseBtn" class="text-xl p-2" title="Close">&times;</button>
+                </div>
+                <div class="p-4 space-y-4">
+                    <div>
+                        <label for="editHandleInput" class="block mb-1 font-semibold" data-i18n="chat.handle">Handle</label>
+                        <div class="flex">
+                            <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 bg-gray-100 text-gray-600">@</span>
+                            <input id="editHandleInput" type="text" placeholder="coolproject" data-i18n-placeholder="chat.channelHandlePlaceholder" class="w-full px-4 py-2 border rounded-r-lg" pattern="[a-zA-Z0-9_]+">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1" data-i18n="chat.channelHandleRules">Only letters, numbers, and underscores.</p>
+                    </div>
+                    <p id="editHandleError" class="text-sm text-red-500"></p>
+                    <div class="flex gap-2">
+                        <button id="editHandleDeleteBtn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg" data-i18n="chat.deleteHandle">Delete Handle</button>
+                        <button id="editHandleSaveBtn" class="ml-auto bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg" data-i18n="common.save">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="incomingCallModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-sm modal-content text-center p-8 relative">
+                <h3 class="text-xl font-bold mb-2" data-i18n="voice.incomingCall">Incoming Call</h3>
+                <div id="incomingCallAvatar" class="w-24 h-24 avatar-circle mx-auto my-4 border-4 border-gray-200"></div>
+                <p class="text-lg font-semibold" id="incomingCallName"></p>
+                <p class="text-sm text-gray-500 mb-6" id="incomingCallChatName"></p>
+                <div class="flex justify-center gap-4">
+                    <button id="declineCallButton" class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-full interactive-pop" data-i18n="voice.decline">Decline</button>
+                    <button id="acceptCallButton" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-full interactive-pop" data-i18n="voice.accept">Accept</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="pollComposerModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-[70] p-4">
+            <div class="bg-white rounded-2xl shadow-xl w-full max-w-md modal-content overflow-hidden">
+                <div class="p-4 border-b flex items-center justify-between gap-3">
+                    <div>
+                        <h3 class="text-lg font-bold app-text-primary" data-i18n="polls.title">New Poll</h3>
+                        <p class="text-sm app-text-muted" data-i18n="polls.subtitle">Set up the question and poll rules.</p>
+                    </div>
+                    <button id="closePollComposerButton" class="text-gray-500 hover:text-gray-700 text-xl leading-none" title="Close" data-i18n-title="common.close">&times;</button>
+                </div>
+                <div class="p-4 space-y-4 max-h-[78vh] overflow-y-auto custom-scrollbar">
+                    <div class="space-y-2">
+                        <label for="pollQuestionInput" class="text-sm font-semibold app-text-primary" data-i18n="polls.question">Question</label>
+                        <input id="pollQuestionInput" type="text" class="w-full rounded-xl border px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ask a question" data-i18n-placeholder="polls.questionPlaceholder">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-sm font-semibold app-text-primary" data-i18n="polls.options">Options</label>
+                        <div id="pollOptionsContainer" class="space-y-2">
+                            <input id="pollOptionInput1" type="text" class="poll-option-input w-full rounded-xl border px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Option 1" data-i18n-placeholder="polls.optionPlaceholder">
+                            <input id="pollOptionInput2" type="text" class="poll-option-input w-full rounded-xl border px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Option 2" data-i18n-placeholder="polls.optionPlaceholder">
+                        </div>
+                    </div>
+                    <button id="addPollOptionButton" type="button" class="w-full rounded-xl btn-neutral py-2.5 interactive-pop font-semibold" data-i18n="polls.addOption">Add Option</button>
+                    <div class="rounded-2xl border p-4 space-y-4 bg-gray-50/80">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <div class="font-semibold app-text-primary" data-i18n="polls.anonymous">Anonymous Mode</div>
+                                <div class="text-sm app-text-muted" data-i18n="polls.anonymousDesc">Hide who voted.</div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input id="pollAnonymousToggle" type="checkbox" class="sr-only peer">
+                                <span class="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-blue-500 transition"></span>
+                                <span class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition peer-checked:translate-x-5"></span>
+                            </label>
+                        </div>
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <div class="font-semibold app-text-primary" data-i18n="polls.examMode">Exam Mode</div>
+                                <div class="text-sm app-text-muted" data-i18n="polls.examModeDesc">Only the poll author can review answers.</div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input id="pollExamModeToggle" type="checkbox" class="sr-only peer">
+                                <span class="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-emerald-500 transition"></span>
+                                <span class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition peer-checked:translate-x-5"></span>
+                            </label>
+                        </div>
+                        <div id="pollCorrectOptionRow" class="hidden space-y-2">
+                            <label for="pollCorrectOptionSelect" class="text-sm font-semibold app-text-primary" data-i18n="polls.correctAnswer">Correct Answer</label>
+                            <select id="pollCorrectOptionSelect" class="w-full rounded-xl border px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"></select>
+                        </div>
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <div class="font-semibold app-text-primary" data-i18n="polls.resultsAfterVote">Hide Results Until Vote</div>
+                                <div class="text-sm app-text-muted" data-i18n="polls.resultsAfterVoteDesc">People need to vote before seeing totals.</div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input id="pollResultsAfterVoteToggle" type="checkbox" class="sr-only peer">
+                                <span class="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-violet-500 transition"></span>
+                                <span class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition peer-checked:translate-x-5"></span>
+                            </label>
+                        </div>
+                        <div class="space-y-2">
+                            <label for="pollTimerSelect" class="text-sm font-semibold app-text-primary" data-i18n="polls.timer">Timer</label>
+                            <select id="pollTimerSelect" class="w-full rounded-xl border px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="0" data-i18n="polls.noTimer">No timer</option>
+                                <option value="300" data-i18n="polls.timer5m">5 minutes</option>
+                                <option value="1800" data-i18n="polls.timer30m">30 minutes</option>
+                                <option value="3600" data-i18n="polls.timer1h">1 hour</option>
+                                <option value="86400" data-i18n="polls.timer1d">1 day</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button id="sendPollButton" type="button" class="w-full rounded-xl btn-accent py-3 interactive-pop font-semibold" data-i18n="polls.send">Send Poll</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="pollVotesModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-[70] p-4">
+            <div class="bg-white rounded-2xl shadow-xl w-full max-w-md modal-content overflow-hidden">
+                <div class="p-4 border-b flex items-center justify-between gap-3">
+                    <h3 id="pollVotesTitle" class="text-lg font-bold app-text-primary" data-i18n="polls.votes">Votes</h3>
+                    <button id="closePollVotesButton" class="text-gray-500 hover:text-gray-700 text-xl leading-none" title="Close" data-i18n-title="common.close">&times;</button>
+                </div>
+                <div id="pollVotesContent" class="p-4 max-h-[70vh] overflow-y-auto custom-scrollbar space-y-4"></div>
+            </div>
+        </div>
+
+        <div id="emailComposerModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-[71] p-4">
+            <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg modal-content overflow-hidden">
+                <div class="p-4 border-b flex items-center justify-between gap-3">
+                    <div>
+                        <h3 id="emailComposerTitle" class="text-lg font-bold app-text-primary" data-i18n="emailBot.composeTitle">Send Email</h3>
+                        <p class="text-sm app-text-muted" data-i18n="emailBot.composeSubtitle">Write and send an email through @email.</p>
+                    </div>
+                    <button id="closeEmailComposerButton" class="text-gray-500 hover:text-gray-700 text-xl leading-none" title="Close" data-i18n-title="common.close">&times;</button>
+                </div>
+                <div class="p-4 space-y-4 max-h-[72vh] overflow-y-auto custom-scrollbar">
+                    <div class="space-y-2">
+                        <label for="emailComposeTargetInput" class="text-sm font-semibold app-text-primary" data-i18n="emailBot.targetAddress">Target Email Address</label>
+                        <input id="emailComposeTargetInput" type="email" class="w-full rounded-xl border px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="name@example.com" data-i18n-placeholder="emailBot.targetPlaceholder">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="emailComposeSubjectInput" class="text-sm font-semibold app-text-primary" data-i18n="emailBot.subject">Title</label>
+                        <input id="emailComposeSubjectInput" type="text" class="w-full rounded-xl border px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Subject" data-i18n-placeholder="emailBot.subjectPlaceholder">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="emailComposeBodyInput" class="text-sm font-semibold app-text-primary" data-i18n="emailBot.body">Body</label>
+                        <textarea id="emailComposeBodyInput" rows="8" class="w-full rounded-xl border px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y" placeholder="Write your email..." data-i18n-placeholder="emailBot.bodyPlaceholder"></textarea>
+                    </div>
+                </div>
+                <div class="p-4 border-t flex items-center justify-end gap-3">
+                    <button id="cancelEmailComposerButton" type="button" class="px-4 py-2 rounded-lg btn-neutral interactive-pop" data-i18n="common.cancel">Cancel</button>
+                    <button id="sendEmailComposerButton" type="button" class="px-4 py-2 rounded-lg btn-accent interactive-pop" data-i18n="emailBot.send">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="emailAddressModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-[71] p-4">
+            <div class="bg-white rounded-2xl shadow-xl w-full max-w-md modal-content overflow-hidden">
+                <div class="p-4 border-b flex items-center justify-between gap-3">
+                    <div>
+                        <h3 id="emailAddressModalTitle" class="text-lg font-bold app-text-primary" data-i18n="emailBot.createAddressTitle">Create Email Address</h3>
+                        <p class="text-sm app-text-muted" data-i18n="emailBot.createAddressSubtitle">Choose the name before @mail.bargmy.ir.</p>
+                    </div>
+                    <button id="closeEmailAddressButton" class="text-gray-500 hover:text-gray-700 text-xl leading-none" title="Close" data-i18n-title="common.close">&times;</button>
+                </div>
+                <div class="p-4 space-y-4">
+                    <div class="space-y-2">
+                        <label for="emailAddressLocalPartInput" class="text-sm font-semibold app-text-primary" data-i18n="emailBot.localPart">Email Name</label>
+                        <div class="flex items-center rounded-xl border overflow-hidden">
+                            <input id="emailAddressLocalPartInput" type="text" class="min-w-0 flex-1 px-4 py-3 focus:outline-none" placeholder="myname" data-i18n-placeholder="emailBot.localPartPlaceholder" spellcheck="false" autocomplete="off">
+                            <span id="emailAddressDomainText" class="px-4 py-3 border-l bg-gray-50 text-sm app-text-muted">@mail.bargmy.ir</span>
+                        </div>
+                        <p class="text-xs app-text-muted" data-i18n="emailBot.localPartRules">Use lowercase letters, numbers, dot, underscore, or hyphen.</p>
+                    </div>
+                </div>
+                <div class="p-4 border-t flex items-center justify-end gap-3">
+                    <button id="cancelEmailAddressButton" type="button" class="px-4 py-2 rounded-lg btn-neutral interactive-pop" data-i18n="common.cancel">Cancel</button>
+                    <button id="createEmailAddressButton" type="button" class="px-4 py-2 rounded-lg btn-accent interactive-pop" data-i18n="emailBot.createAddressAction">Create</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="emailViewerModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-[72] p-4">
+            <div class="bg-white rounded-2xl shadow-xl w-full max-w-5xl h-[86vh] max-h-[760px] modal-content overflow-hidden flex flex-col">
+                <div class="p-4 border-b flex flex-wrap items-center justify-between gap-3">
+                    <div class="min-w-0 flex-1">
+                        <h3 id="emailViewerTitle" class="text-lg font-bold app-text-primary" data-i18n="emailBot.viewerTitle">Email</h3>
+                        <p id="emailViewerMeta" class="text-sm app-text-muted truncate"></p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button id="emailViewerDeleteButton" type="button" class="px-3 py-2 rounded-lg btn-neutral interactive-pop" data-i18n="emailBot.deleteMail">Delete this Mail</button>
+                        <button id="emailViewerReplyButton" type="button" class="px-3 py-2 rounded-lg btn-accent interactive-pop" data-i18n="emailBot.reply">Reply</button>
+                        <button id="emailViewerBlockButton" type="button" class="px-3 py-2 rounded-lg btn-neutral interactive-pop" data-i18n="emailBot.block">Block</button>
+                        <button id="closeEmailViewerButton" class="text-gray-500 hover:text-gray-700 text-xl leading-none p-2" title="Close" data-i18n-title="common.close">&times;</button>
+                    </div>
+                </div>
+                <div class="flex-1 min-h-0 bg-gray-50">
+                    <iframe id="emailViewerFrame" class="w-full h-full border-0 hidden" title="Email Viewer" sandbox="allow-same-origin"></iframe>
+                    <div id="emailViewerTextWrap" class="hidden h-full overflow-y-auto custom-scrollbar p-4">
+                        <div id="emailViewerTextContent" class="whitespace-pre-wrap break-words rounded-2xl bg-white p-4 shadow-sm app-text-primary"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODIFIED: Generic Error Modal -->
+        <div id="errorModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-[70] p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-sm modal-content text-center p-6 relative">
+                <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-times text-4xl text-red-500"></i>
+                </div>
+                <h3 id="errorModalTitle" class="text-xl font-bold mb-2" data-i18n="error.title">Error</h3>
+                <p id="errorModalMessage" class="text-gray-600 mb-6" data-i18n="error.unexpected">An unexpected error occurred.</p>
+                <button id="closeErrorModalButton" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg interactive-pop" data-i18n="common.close">Close</button>
+            </div>
+        </div>
+
+        <div id="captchaModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-[74] p-3">
+            <div class="bg-white rounded-3xl shadow-xl w-full max-w-md sm:max-w-lg h-[72vh] max-h-[560px] modal-content overflow-hidden" data-stop-propagation="true">
+                <iframe id="captchaFrame" title="Puzzle Captcha" class="w-full h-full border-0" src="about:blank"></iframe>
+            </div>
+        </div>
+
+        <div id="avatarEditorModal" class="hidden fixed inset-0 modal-bg items-center justify-center z-[75] p-4">
+            <div class="bg-white rounded-2xl shadow-xl w-full max-w-xl modal-content avatar-editor-modal">
+                <div class="p-4 border-b flex items-center gap-3">
+                    <div class="min-w-0 flex-1">
+                        <h2 class="text-xl font-bold" data-i18n="profile.avatarEditorTitle">Edit Profile Photo</h2>
+                        <p class="text-sm app-text-muted mt-1" data-i18n="profile.avatarEditorSubtitle">Crop, zoom, and rotate your photo before saving it.</p>
+                    </div>
+                    <button id="closeAvatarEditorButton" class="app-icon-button text-xl p-2" title="Close" data-i18n-title="common.close">&times;</button>
+                </div>
+                <div class="p-4 md:p-5 space-y-4 avatar-editor-body">
+                    <div class="avatar-editor-stage">
+                        <div id="avatarEditorViewport" class="avatar-editor-viewport">
+                            <img id="avatarEditorImage" class="avatar-editor-image" alt="Avatar editor preview">
+                            <div class="avatar-editor-mask"></div>
+                            <div id="avatarEditorCropBox" class="avatar-editor-crop-box">
+                                <div class="avatar-editor-crop-grid"></div>
+                                <button type="button" class="avatar-editor-crop-handle avatar-editor-crop-handle-nw" data-avatar-crop-handle="nw" aria-label="Resize crop"></button>
+                                <button type="button" class="avatar-editor-crop-handle avatar-editor-crop-handle-ne" data-avatar-crop-handle="ne" aria-label="Resize crop"></button>
+                                <button type="button" class="avatar-editor-crop-handle avatar-editor-crop-handle-sw" data-avatar-crop-handle="sw" aria-label="Resize crop"></button>
+                                <button type="button" class="avatar-editor-crop-handle avatar-editor-crop-handle-se" data-avatar-crop-handle="se" aria-label="Resize crop"></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="avatar-editor-controls">
+                        <div class="avatar-editor-toolbar">
+                            <button id="avatarEditorReset" type="button" class="avatar-editor-icon-button interactive-pop" title="Reset" data-i18n-title="profile.resetPhoto">
+                                <i class="fas fa-arrows-rotate"></i>
+                            </button>
+                            <span class="avatar-editor-touch-hint" data-i18n="profile.rotateHint">Use two fingers on the square to rotate.</span>
+                        </div>
+                        <div class="avatar-editor-zoom-row">
+                            <i class="fas fa-search-minus avatar-editor-zoom-icon" aria-hidden="true"></i>
+                            <input id="avatarEditorZoom" type="range" min="1" max="3" step="0.01" value="1" class="avatar-editor-zoom-range" aria-label="Zoom">
+                            <i class="fas fa-search-plus avatar-editor-zoom-icon" aria-hidden="true"></i>
+                        </div>
+                    </div>
+                    <div id="avatarEditorUploadProgressContainer" class="hidden avatar-editor-upload-progress">
+                        <div class="avatar-editor-upload-progress-track">
+                            <div id="avatarEditorUploadProgressBar" class="avatar-editor-upload-progress-bar" style="width: 0%;"></div>
+                        </div>
+                        <p id="avatarEditorUploadProgressText" class="avatar-editor-upload-progress-text" data-i18n="profile.uploadingPhoto">Uploading photo...</p>
+                    </div>
+                </div>
+                <div class="p-4 border-t flex items-center justify-end gap-3 avatar-editor-footer">
+                    <button id="cancelAvatarEditorButton" type="button" class="px-4 py-2 rounded-lg app-button-secondary interactive-pop" data-i18n="common.cancel">Cancel</button>
+                    <button id="saveAvatarEditorButton" type="button" class="px-4 py-2 rounded-lg app-button-primary interactive-pop" data-i18n="profile.applyPhoto">Apply Photo</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="static/vendor/dompurify.min.js"></script>
+    <script src="static/js/code-highlight-hardened.js?v=20260409_2"></script>
+    <script src="static/js/app-push.js?v=20260408_15"></script>
+    <script src="static/js/app-audio.js?v=20260404_3"></script>
+    <script src="static/js/app-voice.js?v=20260405_4"></script>
+    <script src="static/vendor/tgstogif/pako.min.js"></script>
+    <script src="static/vendor/tgstogif/lottie.min.js"></script>
+    <script src="static/js/livekit-client.umd.min.js"></script>
+    <script src="static/js/app-voicechat.js?v=20260413_5"></script>
+    <script type="module" src="static/js/app-core.js?v=20260413_6"></script>
+</body>
+</html>

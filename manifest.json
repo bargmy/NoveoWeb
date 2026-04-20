@@ -1,0 +1,13 @@
+{
+  "name": "Noveo",
+  "short_name": "Noveo",
+  "start_url": "/",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "ic_launcher.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
